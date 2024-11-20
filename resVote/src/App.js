@@ -56,6 +56,7 @@ import Signup from './pages/Signup';
 // export default App;
 
 export default function App(){
+  const [user, setUser] = useState(null);
   return(
       <BrowserRouter>
         <Routes>
