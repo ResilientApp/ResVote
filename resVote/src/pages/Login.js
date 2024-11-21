@@ -1,5 +1,6 @@
 import { Button, Form, Input } from "antd";
 import bcrypt from "bcryptjs";
+import { useNavigate } from "react-router-dom";
 
 async function submitValues(event) {
     const username = event.username;
@@ -7,8 +8,22 @@ async function submitValues(event) {
 
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
-    const jwt = null; // function call to backend here
-    // set jwt afterwards
+    const jwt = await fetch("http://localhost:5000/login", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({username, hashedPassword})
+    });
+
+    if (jwt) {
+        localStorage.setItem("authToken", jwt);
+        const navigate = useNavigate();
+        navigate("/election");
+    }
+    else {
+        failedSubmission();
+    }
 }
 
 function failedSubmission() {
