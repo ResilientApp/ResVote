@@ -18,8 +18,6 @@ async function submitValues(event) {
 
     if (jwt) {
         localStorage.setItem("authToken", jwt);
-        const navigate = useNavigate();
-        navigate("/election");
     }
     else {
         failedSubmission();
@@ -31,6 +29,7 @@ function failedSubmission() {
 }
 
 export default function Login() {
+    const navigate = useNavigate();
     return (
         <>
             <h1>Login Page</h1>

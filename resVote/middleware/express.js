@@ -31,6 +31,20 @@ app.post("/login", async (req, res) => {
     res.json({token}); // respond with a jwt
 });
 
+app.post("/signup", async (req, res) => {
+    // Get a mix of signup values
+    const { username, password, region, gender } = req.body; // Pull username and password from request body
+    const newUser = {
+        username: {
+            password,
+            region,
+            gender
+        }
+    }
+    // set this into our kv db
+
+});
+
 app.listen(port, () => {
     console.log(`Express server running on http://localhost:${port}`);
 })
