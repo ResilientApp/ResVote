@@ -7,8 +7,10 @@ async function submitValues(event) {
 
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
-    user = {username : hashedPassword};
-    
+    const user = {username : hashedPassword};
+
+    // insert user to DB
+
 
 }
 
@@ -19,7 +21,7 @@ function failedSubmission() {
 export default function Signup() {
     return (
         <>
-            <h1>Login Page</h1>
+            <h1>Sign Up Page</h1>
             <Form
                 name="basic"
                 labelCol={{
