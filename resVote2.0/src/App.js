@@ -6,7 +6,7 @@ import TransactionForm from './components/TransactionForm';
 import Loader from './components/Loader';
 import ElectionsView from './components/elections';
 
-function App() {
+function App() { // This is the heart of our application (or control center)
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [token, setToken] = useState(null);
   const [isLoadingAfterLogin, setIsLoadingAfterLogin] = useState(false);
@@ -39,11 +39,11 @@ function App() {
   return (
     <div className="App">
       {isLoadingAfterLogin && <Loader />}
-      {!isLoadingAfterLogin && isAuthenticated ? (
-        <ElectionsView onLogout={handleLogout} token={token}></ElectionsView>
+      {!isLoadingAfterLogin && isAuthenticated ? ( // If the user has logged in and is authenticated we take them to the Elections View
+        <ElectionsView onLogout={handleLogout} token={token}></ElectionsView> // Give a logout handler and an identifier token (pub key?)
         // <TransactionForm onLogout={handleLogout} token={token} />
       ) : (
-        <Login onLogin={handleLogin} />
+        <Login onLogin={handleLogin} /> // If they haven't actually logged in yet just show the default login screen apartim made
       )}
     </div>
   );

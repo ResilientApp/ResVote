@@ -1,0 +1,9 @@
+{
+    "election_user": {
+      "publicKey": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAz1Y2z9LaH7O4c5i9hw...m7xw6tXEr8Yy8t4Zoyw9hdI=\n-----END PUBLIC KEY-----",
+      "privateKey": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBK1wE8f+I5YZmDNoBC62FqWePzD2QyDd6\ntc5rjb7TcPV1pKNvsjWplz7A8gjvh0A1ERzQsUQ==\n-----END PRIVATE KEY-----",
+      "transactionID": "123456789abcdef",
+      "timestamp": "01/01/1970T00:00"
+    }
+  }
+  
