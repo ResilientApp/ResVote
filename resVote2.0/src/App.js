@@ -1,16 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import About from './pages/About';
-import Layout from './pages/Navbar';
-import Home from './pages/Home';
-import NoPage from './pages/NoPage';
-// import Login from './pages/Login';
-import Login from './provided_components/Login'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
-import TransactionForm from './provided_components/TransactionForm';
-import Loader from './provided_components/Loader';
-import Signup from './pages/Signup';
+import Login from './components/Login';
+import TransactionForm from './components/TransactionForm';
+import Loader from './components/Loader';
+import ElectionsView from './components/elections';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -46,7 +40,8 @@ function App() {
     <div className="App">
       {isLoadingAfterLogin && <Loader />}
       {!isLoadingAfterLogin && isAuthenticated ? (
-        <TransactionForm onLogout={handleLogout} token={token} />
+        <ElectionsView onLogout={handleLogout} token={token}></ElectionsView>
+        // <TransactionForm onLogout={handleLogout} token={token} />
       ) : (
         <Login onLogin={handleLogin} />
       )}
@@ -55,26 +50,3 @@ function App() {
 }
 
 export default App;
-
-// export default function App(){
-//   const [user, setUser] = useState(null);
-//   return(
-//       <BrowserRouter>
-//         <Routes>
-//           <Route path="/" element={<Layout />}>
-
-//             <Route index element={<Home />} />
-
-//             <Route path="about" element={<About />} />
-
-//             <Route path="login" element={<Login />} />
-
-//             <Route path="signup" element={<Signup />} />
-
-//             <Route path="*" element={<NoPage />} />
-
-//           </Route>
-//         </Routes>
-//       </BrowserRouter>
-//   )
-// }
