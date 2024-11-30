@@ -17,14 +17,14 @@ def test_one_vote_per_voter_per_session(votes: list[Vote]):
     session_data_dict: dict[str, set[dict]] = {}
     
     for v in all_votes:
-        if v.session_id not in session_data_dict:
-            session_data_dict[v.session_id] = set()
+        if v.election_id not in session_data_dict:
+            session_data_dict[v.election_id] = set()
         data = {
-            "candidate": v.candidate,
+            "candidate_name": v.candidate_name,
             "voter_id": v.voter_id
         }
-        assert data not in session_data_dict[v.session_id]
-        session_data_dict[v.session_id].add(data)
+        assert data not in session_data_dict[v.election_id]
+        session_data_dict[v.election_id].add(data)
     
 
 test_one_vote_per_voter_per_session()

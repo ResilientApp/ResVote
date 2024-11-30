@@ -3,12 +3,12 @@ from dataclasses import dataclass
 
 @dataclass
 class Vote:
-    session_id: str
-    candidate: str
+    election_id: str
+    candidate_name: str
     voter_id: str
     
     @property
-    def key(self):
-        return f"{self.session_id}++{self.voter_id}"
+    def transaction_id(self):
+        return f"{self.election_id}++{self.voter_id}"
 
 

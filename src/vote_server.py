@@ -50,7 +50,7 @@ class VoteServer:
         Returns:
             Maybe[str]: the record id if successful, Nothing otherwise
         """
-        payload = {"id": vote.key, "data": asdict(vote)}
+        payload = {"id": vote.transaction_id, "data": asdict(vote)}
         headers = {'Content-Type': 'application/json'}
         
         try:
