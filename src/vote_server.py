@@ -7,6 +7,8 @@ from dataclasses import asdict
 import logging
 from returns.maybe import Maybe, Some, Nothing
 from typing import Any
+import requests
+import json
 
 from .datatype import Vote
 
@@ -37,10 +39,10 @@ class VoteServer:
                         self.record_ids.add(record_id)
                     case Nothing:
                         pass
-        
-        
+    
     def create(self, vote: Vote) -> Maybe[str]:
-        """create a single vote record in the DB
+        """create a single vote record in the DB, 
+        modified based on the original create method from resdb-orm
 
         Args:
             vote (Vote): the vote record to be created
@@ -48,25 +50,30 @@ class VoteServer:
         Returns:
             Maybe[str]: the record id if successful, Nothing otherwise
         """
+        payload = {"id": vote.key, "data": asdict(vote)}
+        headers = {'Content-Type': 'application/json'}
+        
         try:
-            response = self.db.create(asdict(vote))
+            response = requests.post(f'{self.db.db_root_url}/v1/transactions/commit',
+                                 data=json.dumps(payload), headers=headers)
         except Exception as e:
             logging.warning(f"VoteServer.create: request error {e}")
             return Nothing
+
         
-        if not isinstance(response, str):
-            if isinstance(response, dict) and "status" in response:
-                logging.warning(f"VoteServer.create: {response['status']}")
-            else:
-                logging.warning("VoteServer.create: unknown error from ResDB.")
+        # Check if response is successful and handle empty response content
+        if response.status_code != 201:
             return Nothing
+        if not response.content:
+            return Nothing
+        decoded_content = response.content.decode('utf-8')
+        id_value = decoded_content.split(': ')[1].strip()
+    
             
-        
-        self.record_ids.add(response)
-        
+        self.record_ids.add(id_value)
         if self._log_path is not None:
-            self.log_file.write(f"{response}\n")
-        return Some(response)
+            self.log_file.write(f"{id_value}\n")
+        return Some(id_value)
     
     def create_all(self, votes: list[Vote]) -> list[Maybe[str]]:
         """create multiple vote records in the DB
@@ -107,6 +114,7 @@ class VoteServer:
         except KeyError as e:
             logging.warning(f"VoteServer.read: KeyError {e}")
             return Nothing
+        
         return Some(Vote(**vote_data))
     
     def read_all(self) -> list[Vote]:

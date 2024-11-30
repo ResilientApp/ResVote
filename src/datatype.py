@@ -5,5 +5,9 @@ from enum import Enum
 @dataclass
 class Vote:
     session_id: str
-    candidate: int
-    voter_id: int
+    candidate: str
+    voter_id: str
+    
+    @property
+    def key(self):
+        return f"{self.session_id}++{self.voter_id}"
