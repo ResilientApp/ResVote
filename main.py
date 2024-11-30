@@ -4,8 +4,9 @@ import json
 from hypothesis import given
 from hypothesis.strategies import lists
 
-from src.datatype import Vote, vote_gen, vote_list_gen
+from src.datatype import Vote
 from src.vote_server import VoteServer
+from src.generator import vote_list_gen
 
 
 def generate_votes() -> list[Vote]:
