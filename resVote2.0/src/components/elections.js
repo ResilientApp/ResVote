@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Table, Button } from "antd"
+import { Button } from "antd"
 import { castVote, getElections } from "../api";
 import Logout from "./Logout";
 import CreateElection from "./createElection";

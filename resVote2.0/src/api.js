@@ -1,4 +1,14 @@
+import ResVaultSDK from 'resvault-sdk';
+// import fs from "file-system";
+
 export function getElections() {
+    const sdk = new ResVaultSDK(); // Trying to figure out how this sdk words
+    console.log("Attempt to generate keys");
+    const key = sdk.sendMessage({
+        type: "Keys",
+        direction: "Keys",
+    })
+    console.log("keys =", key)
     return [];
 }
 
