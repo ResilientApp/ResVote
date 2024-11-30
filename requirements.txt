@@ -2,3 +2,4 @@ hypothesis==6.121.0
 requests==2.32.3
 fire==0.7.0
 resdb-orm==1.1.5
+dacite==0.0.13
