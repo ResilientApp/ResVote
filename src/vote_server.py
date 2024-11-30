@@ -4,7 +4,6 @@ with some helper functions and better error handling.
 """
 from resdb_orm import ResDBORM
 from dataclasses import asdict
-from dacite import from_dict, MissingValueError
 import logging
 from returns.maybe import Maybe, Some, Nothing
 from typing import Any
@@ -12,26 +11,31 @@ from typing import Any
 from .datatype import Vote
 
 class VoteServer:
-    def __init__(self, config_path: str, log_path: str = "vote_server.log") -> None:
+    def __init__(self, config_path: str, log_path: str | None = None) -> None:
         self.db = ResDBORM(config_path)
         self.record_ids: set[str] = set()
         self._log_path = log_path
-        self.log_file = open(log_path, "a")
         
-        self.load_from_log()
+        if log_path is not None:
+            self.log_file = open(log_path, "a")
+            self._load_from_log()
         
     def __del__(self) -> None:
         self.delete_all()
         self.log_file.close()
         
-    def load_from_log(self) -> None:
+    def _load_from_log(self) -> None:
         """load record ids from the log file if it is in the DB
         """
+        assert self._log_path is not None
         with open(self._log_path, "r") as f:
             for line in f:
                 record_id = line.strip()
-                if self.db.read(record_id):
-                    self.record_ids.add(record_id)
+                match self.read(record_id):
+                    case Some(_):
+                        self.record_ids.add(record_id)
+                    case Nothing:
+                        pass
         
         
     def create(self, vote: Vote) -> Maybe[str]:
@@ -46,12 +50,12 @@ class VoteServer:
         try:
             response = self.db.create(asdict(vote))
         except Exception as e:
-            logging.warning(e)
+            logging.warning(f"VoteServer.create: request error {e}")
             return Nothing
         
         if not isinstance(response, str):
             if isinstance(response, dict) and "status" in response:
-                logging.warning(response["status"])
+                logging.warning(f"VoteServer.create: {response['status']}")
             else:
                 logging.warning("VoteServer.create: unknown error from ResDB.")
             return Nothing
@@ -84,12 +88,12 @@ class VoteServer:
         try:
             response = self.db.read(record_id)
         except Exception as e:
-            logging.warning(e)
+            logging.warning(f"VoteServer.read: request error {e}")
             return Nothing
         
         if not isinstance(response, dict):
             if isinstance(response, str):
-                logging.warning(response)
+                logging.warning(f"VoteServer.read: {response}")
             else:
                 logging.warning("VoteServer.read: unknown error from ResDB.")
             return Nothing
@@ -98,7 +102,7 @@ class VoteServer:
             assert record_id == response["id"]
             vote_data = response["data"]
         except KeyError as e:
-            logging.warning(e)
+            logging.warning(f"VoteServer.read: KeyError {e}")
             return Nothing
         return Some(Vote(**vote_data))
     
