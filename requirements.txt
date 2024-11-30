@@ -3,3 +3,4 @@ requests==2.32.3
 fire==0.7.0
 resdb-orm==1.1.5
 dacite==0.0.13
+returns==0.22.0
