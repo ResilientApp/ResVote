@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Table, Button } from "antd"
 import { castVote, getElections } from "../api";
 import Logout from "./Logout";
+import CreateElection from "./createElection";
 /**
  * 
  * @param {election, setElectionToVoteIn} params 
@@ -47,7 +48,7 @@ function VoteInElection(params) {
 
     // Function to submit which candidate was chosen from the form
     async function handleSubmit(e) {
-        e.preventDfault();
+        e.preventDefault();
 
         if (!selectedCandidate) {
             alert("Must vote for someone!");
@@ -98,28 +99,52 @@ function VoteInElection(params) {
 export default function ElectionsView(params) {
     const { onLogout, token } = params;
     const [electionToVoteIn, setElectionToVoteIn] = useState(null);
-    const availableElections = getElections();
-    return(
+    const availableElections = getElections(); // Fetch elections
+    const [createElection, setCreateElection] = useState(false);
+
+    return (
         <>
-            ({electionToVoteIn !== null} ?
-            <>
-                <h1>Vote in Election: {electionToVoteIn.electionID}</h1>
-                <VoteInElection election={electionToVoteIn} token={token}/>
-            </>
-            :
-            <h1>Elections View</h1>
-            <table>
-                <tr>
-                    <th>Election Description</th>
-                    <th>Election ID</th>
-                    <th>Election Candidates</th>
-                    <th>Vote in Election</th>
-                </tr>
-                {availableElections.map(election => {
-                    <SelectElection election={election} setElectionToVoteIn={setElectionToVoteIn}/>
-                })}
-            </table>)
+            {/* Only render CreateElection or the button when createElection is true */}
+            {createElection ? (
+                <CreateElection setCreateElection={setCreateElection}/> // Render CreateElection when state is true
+            ) : (
+                <>
+                    {/* When a user isn't creating an election they can view or vote */}
+                    <Button onClick={() => setCreateElection(true)}>Create Election</Button>
+                    {electionToVoteIn === null ? (
+                        <>
+                            <h1>Elections View</h1>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Election Description</th>
+                                        <th>Election ID</th>
+                                        <th>Election Candidates</th>
+                                        <th>Vote in Election</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {availableElections.map(election => (
+                                        <SelectElection 
+                                            key={election.electionID} 
+                                            election={election} 
+                                            setElectionToVoteIn={setElectionToVoteIn} 
+                                        />
+                                    ))}
+                                </tbody>
+                            </table>
+                        </>
+                    ) : (
+                        <>
+                            <h1>Vote in Election: {electionToVoteIn.electionID}</h1>
+                            <VoteInElection election={electionToVoteIn} token={token} />
+                        </>
+                    )}
+                </>
+            )}
+
+            {/* The logout button is always available */}
             <Logout onLogout={onLogout} />
         </>
-    )
+    );
 }
