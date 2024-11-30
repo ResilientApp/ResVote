@@ -22,7 +22,8 @@ class VoteServer:
         
     def __del__(self) -> None:
         self.delete_all()
-        self.log_file.close()
+        if self._log_path is not None:
+            self.log_file.close()
         
     def _load_from_log(self) -> None:
         """load record ids from the log file if it is in the DB
@@ -62,7 +63,9 @@ class VoteServer:
             
         
         self.record_ids.add(response)
-        self.log_file.write(f"{response}\n")
+        
+        if self._log_path is not None:
+            self.log_file.write(f"{response}\n")
         return Some(response)
     
     def create_all(self, votes: list[Vote]) -> list[Maybe[str]]:
