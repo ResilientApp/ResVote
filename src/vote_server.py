@@ -15,11 +15,23 @@ class VoteServer:
     def __init__(self, config_path: str, log_path: str = "vote_server.log") -> None:
         self.db = ResDBORM(config_path)
         self.record_ids: set[str] = set()
+        self._log_path = log_path
         self.log_file = open(log_path, "a")
+        
+        self.load_from_log()
         
     def __del__(self) -> None:
         self.delete_all()
         self.log_file.close()
+        
+    def load_from_log(self) -> None:
+        """load record ids from the log file if it is in the DB
+        """
+        with open(self._log_path, "r") as f:
+            for line in f:
+                record_id = line.strip()
+                if self.db.read(record_id):
+                    self.record_ids.add(record_id)
         
         
     def create(self, vote: Vote) -> Maybe[str]:
