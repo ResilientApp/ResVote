@@ -26,7 +26,7 @@ cd resilientdb
 ./service/tools/kv/server_tools/start_kv_service.sh
 ```
 
-### Python SDK
+### Graph QL
 
 ```sh
 git clone https://github.com/apache/incubator-resilientdb-python-sdk sdk
@@ -47,4 +47,11 @@ bazel-bin/service/http_server/crow_service_main service/tools/config/interface/c
 
 ```sh
 python test_driver.py 
+```
+
+## Running this project
+
+```sh
+source ./env.sh
+python main.py
 ```
