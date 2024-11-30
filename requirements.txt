@@ -1,0 +1,2 @@
+hypothesis==6.121.0
+requests==2.32.3
