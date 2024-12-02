@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "antd"
 import { castVote, getElections } from "../api";
 import Logout from "./Logout";
@@ -99,8 +99,18 @@ function VoteInElection(params) {
 export default function ElectionsView(params) {
     const { onLogout, token } = params;
     const [electionToVoteIn, setElectionToVoteIn] = useState(null);
-    const availableElections = getElections(); // Fetch elections
+    const [availableElections, setAvailableElections] = useState([]);
     const [createElection, setCreateElection] = useState(false);
+
+    // Hacky way to get the getElections() function to call without error
+    useEffect(() => {
+        const fetchElections = async () => {
+            const elections = await getElections();  // Fetch elections asynchronously
+            setAvailableElections(elections);  // Update state with the fetched elections
+        };
+
+        fetchElections();
+    }, [])
 
     return (
         <>
