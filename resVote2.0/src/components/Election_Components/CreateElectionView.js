@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Button, Input, Form, List } from "antd";
-import { castVote, getElections, addElectionToResDB, updateListOfCreatedElections } from "../api";
+import { addElectionToResDB } from "../../api";
+import "./CreateElectionView.css"
 
-export default function CreateElection(params) {
+export default function CreateElectionView(params) {
     const { setCreateElection } = params;
     
     // State for the election form
@@ -50,7 +51,7 @@ export default function CreateElection(params) {
             <Button onClick={() => setCreateElection(false)}>View Elections</Button>
             <h1>Create Election</h1>
             <Form onSubmit={handleSubmit}>
-                <div>
+                <div className="padding">
                     <label>
                         Election Name:
                         <Input
@@ -60,7 +61,7 @@ export default function CreateElection(params) {
                         />
                     </label>
                 </div>
-                <div>
+                <div className="padding">
                     <label>
                         Description:
                         <Input.TextArea
@@ -70,7 +71,7 @@ export default function CreateElection(params) {
                         />
                     </label>
                 </div>
-                <div>
+                <div className="padding">
                     <label>
                         Add Candidate:
                         <Input
@@ -83,7 +84,7 @@ export default function CreateElection(params) {
                     <Button onClick={addCandidate} type="primary">Add Candidate</Button>
                 </div>
                 
-                <div>
+                <div className="candidateList">
                     <h3>Candidate List:</h3>
                     {candidates.length === 0 ?
                     <></>

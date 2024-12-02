@@ -1,0 +1,22 @@
+h1 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+h2 {
+    font-size: 1.5rem;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.electionContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh; /* Ensures container takes at least full viewport height */
+    padding: 20px;
+    background-color: #f4f7fb; /* Light background for the entire container */
+    box-sizing: border-box;
+}

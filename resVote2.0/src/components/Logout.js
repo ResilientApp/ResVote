@@ -5,7 +5,14 @@ export default function Logout(params){
     const { onLogout } = params;
   return (
     <>
-        <div className="page-container">
+        <button
+            type="button"
+            className="btn btn-danger logout-button"
+            onClick={() => onLogout()}
+        >
+            Logout
+        </button>
+        {/* <div className="page-container">
             <div className="form-container">
                 <div className="d-flex justify-content-between align-items-center mb-4">
                         <button
@@ -17,7 +24,7 @@ export default function Logout(params){
                         </button>
                     </div>
                 </div>
-            </div>
+            </div> */}
         </>
     )
 }

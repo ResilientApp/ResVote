@@ -1,0 +1,11 @@
+.padding {
+    padding: .5rem;
+}
+
+label {
+    margin-bottom: 1rem;
+}
+
+.candidateList {
+    margin-bottom: .5rem;
+}
