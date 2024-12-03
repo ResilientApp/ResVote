@@ -1,6 +1,6 @@
 
 import { ResilientDB, FetchClient } from 'resilientdb-javascript-sdk';
-// import fs from "file-system";
+import ResVaultSDK from 'resvault-sdk';
 
 const ELECTION_LIST_KEYS = {
     pub_key: "65CKYjMoaez6FZnPkD53wxtTAiTX7YEcLvjnQtNjWEas",
@@ -13,6 +13,7 @@ const TEST_USER_KEYS = {
 }
 
 const resilientDBClient = new ResilientDB("https://cloud.resilientdb.com", new FetchClient());
+const sdkRef = new ResVaultSDK();
 
 /**
  * 
@@ -26,26 +27,45 @@ const resilientDBClient = new ResilientDB("https://cloud.resilientdb.com", new F
  */
 export async function addElectionToResDB(election) {
     const { name, description, candidates } = election;
-    const transactionData = {
-        operation: "CREATE",
+    const message = {
+        type: "commit",
+        direction: "commit",
         amount: 1,
-        signerPublicKey: TEST_USER_KEYS["pub_key"],
-        signerPrivateKey: TEST_USER_KEYS["priv_key"],
-        recipientPublicKey: ELECTION_LIST_KEYS["pub_key"], 
-        asset: {
+        data: {
             name,
             description,
-            candidates,
-        }
-    }
+            candidates
+        },
+        recipient: ELECTION_LIST_KEYS["pub_key"]
+    };
+
     try {
-        const transaction = await resilientDBClient.postTransaction(transactionData);
-        console.log("New election created transaction", transaction);
-        return transaction.id;
+        const res = await sdkRef.sendMessage(message);
+        console.log("New election:", res);
     }
-    catch(e) {
-        console.error("Error making transaction:", e);
+    catch (err) {
+        console.error("Error making election", err);
     }
+    // const transactionData = {
+    //     operation: "CREATE",
+    //     amount: 1,
+    //     signerPublicKey: TEST_USER_KEYS["pub_key"],
+    //     signerPrivateKey: TEST_USER_KEYS["priv_key"],
+    //     recipientPublicKey: ELECTION_LIST_KEYS["pub_key"], 
+    //     asset: {
+    //         name,
+    //         description,
+    //         candidates,
+    //     }
+    // }
+    // try {
+    //     const transaction = await resilientDBClient.postTransaction(transactionData);
+    //     console.log("New election created transaction", transaction);
+    //     return transaction.id;
+    // }
+    // catch(e) {
+    //     console.error("Error making transaction:", e);
+    // }
 }
 
 /**
