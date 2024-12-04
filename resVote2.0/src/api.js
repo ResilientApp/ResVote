@@ -12,8 +12,25 @@ const TEST_USER_KEYS = {
     priv_key: "FNNeS67CJov9VEW13k4QQH1LfZGmjGQ1qKuxj7uaDPfD"
 }
 
-const resilientDBClient = new ResilientDB("https://cloud.resilientdb.com", new FetchClient());
 const sdkRef = new ResVaultSDK();
+
+function messageListener(event) {
+    const message = event.message;
+    console.log("message response:", JSON.stringify(message));
+    if (
+        message &&
+        message.type === 'FROM_CONTENT_SCRIPT' &&
+        message.data &&
+        message.data.success !== undefined
+    ) {
+        console.log("Transaction id =", message.data.data.postTransaction.id);
+    }
+    else {
+        console.error("Transaction failed to be made");
+    }
+}
+
+sdkRef.addMessageListener(messageListener);
 
 /**
  * 
@@ -30,42 +47,17 @@ export async function addElectionToResDB(election) {
     const message = {
         type: "commit",
         direction: "commit",
-        amount: 1,
-        data: {
-            name,
-            description,
-            candidates
-        },
+        amount: "1",
+        data: election,
         recipient: ELECTION_LIST_KEYS["pub_key"]
     };
 
     try {
         const res = await sdkRef.sendMessage(message);
-        console.log("New election:", res);
     }
     catch (err) {
         console.error("Error making election", err);
     }
-    // const transactionData = {
-    //     operation: "CREATE",
-    //     amount: 1,
-    //     signerPublicKey: TEST_USER_KEYS["pub_key"],
-    //     signerPrivateKey: TEST_USER_KEYS["priv_key"],
-    //     recipientPublicKey: ELECTION_LIST_KEYS["pub_key"], 
-    //     asset: {
-    //         name,
-    //         description,
-    //         candidates,
-    //     }
-    // }
-    // try {
-    //     const transaction = await resilientDBClient.postTransaction(transactionData);
-    //     console.log("New election created transaction", transaction);
-    //     return transaction.id;
-    // }
-    // catch(e) {
-    //     console.error("Error making transaction:", e);
-    // }
 }
 
 /**
@@ -73,24 +65,26 @@ export async function addElectionToResDB(election) {
  * @returns List of availble election Ids
  * 
  * Currently doesn't work
+ * TODO: This is probably gonna have to be done using mongoDB, otherwise there's not way to actually filter anything
  */
 export async function getElections() {
     // The below code breaks. It seems like the transaction ID isn't being entered right (complains about
     // seeing the char 'd' and not a number). IDK why it's doing this
     // const test = await resilientDBClient.getTransaction("7d34971e49bddce01eec1460463cdb1d9f37ff10382c08c0ec3a4a942e6d3264")
 
-    const filter = {
-        "senderPublicKey": TEST_USER_KEYS["pub_key"],
-        "recipientPublickKey": ELECTION_LIST_KEYS["priv_key"]
-    }
-    try {
-        // This straight up doesn't work, idk if this function got deprecated or something
-        const elections = await resilientDBClient.getFilteredTransactions(filter); 
-        console.log("elections", elections);
-    }
-    catch(e) {
-        console.error("error getting elections", e);
-    }
+    // const filter = {
+    //     "senderPublicKey": TEST_USER_KEYS["pub_key"],
+    //     "recipientPublickKey": ELECTION_LIST_KEYS["priv_key"]
+    // }
+    // try {
+    //     // This straight up doesn't work, idk if this function got deprecated or something
+    //     const elections = await resilientDBClient.getFilteredTransactions(filter); 
+    //     console.log("elections", elections);
+    // }
+    // catch(e) {
+    //     console.error("error getting elections", e);
+    // }
+
     return [];
 }
 

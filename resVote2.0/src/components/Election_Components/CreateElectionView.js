@@ -13,6 +13,8 @@ export default function CreateElectionView(params) {
     // State for candidates
     const [candidateInput, setCandidateInput] = useState('');
     const [candidates, setCandidates] = useState([]);
+
+    
     
     // Handle form submission (currently just logs the election data)
     function handleSubmit(e) {

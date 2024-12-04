@@ -39,14 +39,14 @@ function App() { // This is the heart of our application (or control center)
   return (
     <div className="App">
       {/* Comment below line and uncomment the block to get actual correct code flow */}
-      <ElectionsView onLogout={handleLogout} token="123" /> 
-      {/* {isLoadingAfterLogin && <Loader />}
+      {/* <ElectionsView onLogout={handleLogout} token="123" />  */}
+      {isLoadingAfterLogin && <Loader />}
       {!isLoadingAfterLogin && isAuthenticated ? ( // If the user has logged in and is authenticated we take them to the Elections View
         <ElectionsView onLogout={handleLogout} token={token}></ElectionsView> // Give a logout handler and an identifier token (pub key?)
         // <TransactionForm onLogout={handleLogout} token={token} />
       ) : (
         <Login onLogin={handleLogin} /> // If they haven't actually logged in yet just show the default login screen apartim made
-      )} */}
+      )}
     </div>
   );
 }
