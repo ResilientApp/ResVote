@@ -1,6 +1,5 @@
-
-import { ResilientDB, FetchClient } from 'resilientdb-javascript-sdk';
 import ResVaultSDK from 'resvault-sdk';
+import React, { useRef, useEffect } from 'react';
 
 const ELECTION_LIST_KEYS = {
     pub_key: "65CKYjMoaez6FZnPkD53wxtTAiTX7YEcLvjnQtNjWEas",
@@ -12,7 +11,7 @@ const TEST_USER_KEYS = {
     priv_key: "FNNeS67CJov9VEW13k4QQH1LfZGmjGQ1qKuxj7uaDPfD"
 }
 
-const sdkRef = new ResVaultSDK();
+const sdkRef = ResVaultSDK();
 
 function messageListener(event) {
     const message = event.message;
@@ -45,15 +44,15 @@ sdkRef.addMessageListener(messageListener);
 export async function addElectionToResDB(election) {
     const { name, description, candidates } = election;
     const message = {
-        type: "commit",
-        direction: "commit",
+        type: 'commit',
+        direction: 'commit',
         amount: "1",
-        data: election,
-        recipient: ELECTION_LIST_KEYS["pub_key"]
+        data: {},
+        recipient: ELECTION_LIST_KEYS["pub_key"],
     };
 
     try {
-        const res = await sdkRef.sendMessage(message);
+        sdkRef.sendMessage(message);
     }
     catch (err) {
         console.error("Error making election", err);

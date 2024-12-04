@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button, Input, Form, List } from "antd";
 import { addElectionToResDB } from "../../api";
-import "./CreateElectionView.css"
+import "./CreateElectionView.css";
+import ResVaultSDK from 'resvault-sdk';
 
 export default function CreateElectionView(params) {
     const { setCreateElection } = params;
@@ -14,6 +15,41 @@ export default function CreateElectionView(params) {
     const [candidateInput, setCandidateInput] = useState('');
     const [candidates, setCandidates] = useState([]);
 
+    const sdkRef = useRef(null);
+
+    if (!sdkRef.current) {
+        sdkRef.current = new ResVaultSDK();
+    }
+
+    useEffect(() => {
+        const sdk = sdkRef.current;
+        if (!sdk) return;
+    
+        const messageHandler = (event) => {
+          const message = event.data;
+    
+          if (
+            message &&
+            message.type === 'FROM_CONTENT_SCRIPT' &&
+            message.data &&
+            message.data.success !== undefined
+          ) {
+            if (message.data.success) {
+                console.log("Election created successfully");
+                console.log("Response:", JSON.stringify(message));
+            } else {
+                console.error("Election creation failed:", message.data.error, JSON.stringify(message.data.errors));
+            }
+          }
+        };
+    
+        sdk.addMessageListener(messageHandler);
+    
+        return () => {
+          sdk.removeMessageListener(messageHandler);
+        };
+      }, []);
+
     
     
     // Handle form submission (currently just logs the election data)
@@ -25,10 +61,20 @@ export default function CreateElectionView(params) {
             candidates,
         };
 
-        const electionID = addElectionToResDB(electionData);
+        if (sdkRef.current) {
+            sdkRef.current.sendMessage({
+                type: 'commit',
+                direction: 'commit',
+                amount: "1",
+                data: {},
+                recipient: "65CKYjMoaez6FZnPkD53wxtTAiTX7YEcLvjnQtNjWEas",
+            })
+        }
+
+        // const electionID = addElectionToResDB(electionData);
         
-        // Handle the election creation (send electionData to your API or state)
-        console.log("Election created:", electionData);
+        // // Handle the election creation (send electionData to your API or state)
+        // console.log("Election created:", electionData);
         
         // Reset the form
         setElectionName('');
