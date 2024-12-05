@@ -1,6 +1,11 @@
-import React, { useState } from "react";
-import { castVote } from "../../api";
+import React, { useState, useRef, useEffect } from "react";
+import ResVaultSDK from 'resvault-sdk';
 import "./VoteInElectionView.css"
+
+const VOTE_USER_KEYS = {
+    pub_key: "EhUevpJhHBPuR2JuruiVp2URMCdgKAFCirCBNvhc75iA",
+    priv_key: "FNNeS67CJov9VEW13k4QQH1LfZGmjGQ1qKuxj7uaDPfD"
+}
 
 /**
  * 
@@ -18,6 +23,41 @@ export default function VoteInElectionView(params) {
     const { description, electionID, candidates } = election;
     const [selectedCandidate, setSelectedCandidate] = useState("");
 
+    const sdkRef = useRef(null);
+
+    if (!sdkRef.current) {
+        sdkRef.current = new ResVaultSDK();
+    }
+
+    useEffect(() => {
+        const sdk = sdkRef.current;
+        if (!sdk) return;
+    
+        const messageHandler = (event) => {
+          const message = event.data;
+    
+          if (
+            message &&
+            message.type === 'FROM_CONTENT_SCRIPT' &&
+            message.data &&
+            message.data.success !== undefined
+          ) {
+            if (message.data.success) {
+                console.log("Election created successfully");
+                console.log("Response:", JSON.stringify(message));
+            } else {
+                console.error("Election creation failed:", message.data.error, JSON.stringify(message.data.errors));
+            }
+          }
+        };
+    
+        sdk.addMessageListener(messageHandler);
+    
+        return () => {
+          sdk.removeMessageListener(messageHandler);
+        };
+      }, []);
+
     // Function to submit which candidate was chosen from the form
     async function handleSubmit(e) {
         e.preventDefault();
@@ -26,13 +66,24 @@ export default function VoteInElectionView(params) {
             alert("Must vote for someone!");
         }
         else {
-            try { // If they have chosen a candidate and click 'Vote' we attempt to cast their vote
-                const voteSuccessful = await castVote(electionID, selectedCandidate, token);
+            try {
+                sdkRef.current.sendMessage({
+                    type: 'commit',
+                    direction: 'commit',
+                    amount: "1",
+                    data: {
+                        "type": "vote",
+                        "candidate": selectedCandidate,
+                        "election": electionID
+                    },
+                    recipient: VOTE_USER_KEYS["pub_key"],
+                });
+                setSelectedCandidate(null);
                 setElectionToVoteIn(null);
             }
-            catch (error) {
-                console.error("Votting error", error);
-                alert("error casting vote");
+            catch (err) {
+                console.error("Vote wasn't cast", err);
+                alert(err);
             }
         }
     }

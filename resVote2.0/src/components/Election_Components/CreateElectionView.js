@@ -1,8 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button, Input, Form, List } from "antd";
-import { addElectionToResDB } from "../../api";
 import "./CreateElectionView.css";
 import ResVaultSDK from 'resvault-sdk';
+
+const ELECTION_LIST_KEYS = {
+    pub_key: "65CKYjMoaez6FZnPkD53wxtTAiTX7YEcLvjnQtNjWEas",
+    priv_key: "DeV5ytoprBy7k5M31ABkNNPi8mwaUL8dhGgJnXk1bGN9"
+}
 
 export default function CreateElectionView(params) {
     const { setCreateElection } = params;
@@ -55,26 +59,25 @@ export default function CreateElectionView(params) {
     // Handle form submission (currently just logs the election data)
     function handleSubmit(e) {
         e.preventDefault();
-        const electionData = {
-            electionName,
-            description,
-            candidates,
-        };
-
         if (sdkRef.current) {
-            sdkRef.current.sendMessage({
-                type: 'commit',
-                direction: 'commit',
-                amount: "1",
-                data: {},
-                recipient: "65CKYjMoaez6FZnPkD53wxtTAiTX7YEcLvjnQtNjWEas",
-            })
+            try {
+                sdkRef.current.sendMessage({
+                    type: 'commit',
+                    direction: 'commit',
+                    amount: "1",
+                    data: {
+                        "type": "election",
+                        "name": electionName,
+                        "description": description,
+                        "candidates": candidates
+                    },
+                    recipient: ELECTION_LIST_KEYS["pub_key"],
+                })
+            }
+            catch (err) {
+                console.error("Election wasn't created", err)
+            }
         }
-
-        // const electionID = addElectionToResDB(electionData);
-        
-        // // Handle the election creation (send electionData to your API or state)
-        // console.log("Election created:", electionData);
         
         // Reset the form
         setElectionName('');
