@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "antd"
-import { getElections } from "../../api";
+import { getElections } from "../../mongoDB/mongoAPI";
 import "./ElectionTableView.css";
 
 /**

@@ -13,10 +13,12 @@
     "file-system": "^2.2.2",
     "fs": "^0.0.1-security",
     "lottie-web": "^5.12.2",
+    "mongodb": "^6.11.0",
     "react": "^18.3.1",
     "react-bootstrap": "^2.10.5",
     "react-dom": "^18.3.1",
     "react-scripts": "5.0.1",
+    "resilient-node-cache": "^1.0.1",
     "resilientdb-javascript-sdk": "^0.1.14",
     "resvault-sdk": "^1.0.1",
     "uuid": "^10.0.0",
@@ -48,7 +50,6 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.1",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.7.2"
+    "ts-node": "^10.9.2"
   }
 }
