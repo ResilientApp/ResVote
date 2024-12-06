@@ -15,4 +15,4 @@ def vote_gen(draw: Callable[[SearchStrategy], str]) -> Vote:
     voter_id = draw(text(min_size=1, max_size=10, alphabet=string.ascii_letters)) 
     return Vote(election_id=election_id, candidate_name=candidate_name, voter_id=voter_id)
 
-vote_list_gen = lists(vote_gen(), min_size=1, max_size=10)
+vote_list_gen = lists(vote_gen(), min_size=50, max_size=100)
