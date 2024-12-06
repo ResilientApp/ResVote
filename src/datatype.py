@@ -16,4 +16,17 @@ class Vote:
     def transaction_id(self):
         return f"{self.election_id}++{self.voter_id}"
 
+@dataclass
+class Voter:
+    voter_id: str
+    age: int
+    gender: str
+    region: str
+    race: str
+    education: str
+
+    @property
+    def transaction_id(self) -> str:
+        return self.voter_id
+
 
