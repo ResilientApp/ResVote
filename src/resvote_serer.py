@@ -35,3 +35,17 @@ class resVoteServer:
         # ToDo - query elections from the VoteServer
         election_ids = ["PRESIDENTIAL_2024_PRIMARIES", "PRESIDENTIAL_2024_GENERAL"]
         return election_ids
+
+    def get_candidates(self, election_id: str) -> list[str]:
+        """Get a list of candidate names for a given election."""
+        # ToDo - query candidates from the VoteServer
+        candidates: list[str] = []
+        match election_id:
+            case "PRESIDENTIAL_2024_PRIMARIES":
+                candidates = ["Alice", "Bob", "Charlie"]
+            case "PRESIDENTIAL_2024_GENERAL":
+                candidates = ["David", "Eve"]
+            case _:
+                pass
+
+        return candidates
