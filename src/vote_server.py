@@ -9,6 +9,7 @@ from returns.maybe import Maybe, Some, Nothing
 from typing import Any
 import requests
 import json
+from collections import Counter
 
 from .datatype import Vote
 
@@ -68,11 +69,17 @@ class VoteServer:
             return Nothing
         decoded_content = response.content.decode('utf-8')
         id_value = decoded_content.split(': ')[1].strip()
-    
             
-        self.record_ids.add(id_value)
+        # Track the ID based on its source
+        if source == "generated":
+            self.generated_ids.add(id_value)
+        elif source == "real":
+            self.real_ids.add(id_value)
+
+        # Optionally log the ID
         if self._log_path is not None:
-            self.log_file.write(f"{id_value}\n")
+            self.log_file.write(f"{id_value} ({source})\n")
+
         return Some(id_value)
     
     def create_all(self, votes: list[Vote]) -> list[Maybe[str]]:
@@ -117,9 +124,17 @@ class VoteServer:
         
         return Some(Vote(**vote_data))
     
-    def read_all(self) -> list[Vote]:
-        votes = [self.read(rid).unwrap() for rid in self.record_ids]
-        return votes
+    # def read_all(self) -> list[Vote]:
+    #     votes = [self.read(rid).unwrap() for rid in self.record_ids]
+    #     return votes
+
+    def read_generated(self) -> list[Vote]:
+        """Retrieve all generated votes."""
+        return [self.read(record_id).unwrap() for record_id in self.generated_ids if self.read(record_id).is_some()]
+
+    def read_real(self) -> list[Vote]:
+        """Retrieve all real votes."""
+        return [self.read(record_id).unwrap() for record_id in self.real_ids if self.read(record_id).is_some()]
     
     def db_read_all(self) -> Any:
         """read all data records from the DB, no matter if it is created by this server or not
@@ -155,4 +170,50 @@ class VoteServer:
         
         for record in response:
             self.db.delete(record["id"])
-        
+    
+    def get(self, election_id: str, voter_id: str) -> Maybe[Vote]:
+        """Retrieve a vote by election_id and voter_id.
+
+        Args:
+            election_id (str): The election ID.
+            voter_id (str): The voter ID.
+
+        Returns:
+            Maybe[Vote]: The corresponding Vote object if found, Nothing otherwise.
+        """
+        for record_id in self.record_ids:
+            vote = self.read(record_id).unwrap_or(None)
+            if vote and vote.election_id == election_id and vote.voter_id == voter_id:
+                return Some(vote)
+        return Nothing
+
+    def total_votes(self, election_id: str) -> int:
+        """Get the total number of votes in an election.
+
+        Args:
+            election_id (str): The election ID.
+
+        Returns:
+            int: Total number of votes in the election.
+        """
+        return sum(
+            1 for record_id in self.record_ids
+            if self.read(record_id).unwrap_or(None) and self.read(record_id).unwrap().election_id == election_id
+        )
+
+    def votes_per_candidate(self, election_id: str) -> dict[str, int]:
+        """Get the number of votes each candidate received in an election.
+
+        Args:
+            election_id (str): The election ID.
+
+        Returns:
+            dict[str, int]: A dictionary with candidates as keys and their vote counts as values.
+        """
+        candidate_votes = Counter()
+        for record_id in self.record_ids:
+            vote = self.read(record_id).unwrap_or(None)
+            if vote and vote.election_id == election_id:
+                candidate_votes[vote.candidate] += 1
+        return dict(candidate_votes)
+            
