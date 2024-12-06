@@ -2,7 +2,7 @@ import xmlrpc.client
 import fire
 from textual.app import App, ComposeResult
 from textual.containers import Vertical, Horizontal
-from textual.widgets import Header, Footer, Button, Input, Label, Static
+from textual.widgets import Header, Footer, Button, Input, Label
 from textual.screen import Screen
 from src.util import load_server_config
 
@@ -59,9 +59,7 @@ class LoginScreen(Screen):
                     else:
                         self.app.push_screen(MainScreen())
                 else:
-                    message_label.update(
-                        "Login failed. Invalid username or password or role."
-                    )
+                    message_label.update("Login failed. Invalid credentials or role.")
                     self.query_one("#username_input", Input).value = ""
                     self.query_one("#password_input", Input).value = ""
             except Exception as e:
@@ -110,21 +108,18 @@ class MainScreen(Screen):
 
         try:
             elections = self.app.server.get_elections()  # returns list[str]
-
             if elections:
                 election_list.mount(Label("Welcome! Choose an election:"))
                 for i, election_name in enumerate(elections):
                     election_list.mount(Button(election_name, id=f"election_{i}"))
             else:
                 election_list.mount(Label("No elections available."))
-
         except Exception as e:
             for child in list(election_list.children):
                 child.remove()
             election_list.mount(Label(f"Error loading elections: {e}"))
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        # When the user selects an election, get the candidates from the server.
         if event.button.id and event.button.id.startswith("election_"):
             selected_election = str(event.button.label)
             label = self.query(Label).first()
@@ -194,6 +189,11 @@ class AdminScreen(Screen):
         ("b", "back", "Back to Login"),
     ]
 
+    def __init__(self):
+        super().__init__()
+        self.selected_action = None  # "visualization" or "generation"
+        self.elections_loaded = False
+
     def compose(self) -> ComposeResult:
         yield Header(show_clock=False)
         yield Label("Admin Menu", id="admin_title")
@@ -203,15 +203,63 @@ class AdminScreen(Screen):
             Button("Generate", id="generate_btn"),
             id="admin_actions",
         )
+        # A container for elections and results
+        yield Vertical(id="admin_elections")
         yield Footer()
 
+    def load_elections(self):
+        admin_elections = self.query_one("#admin_elections", Vertical)
+        # Clear out old children if any
+        for child in list(admin_elections.children):
+            child.remove()
+
+        try:
+            elections = self.app.server.get_elections()
+            if elections:
+                admin_elections.mount(Label("Available Elections:"))
+                for i, election_name in enumerate(elections):
+                    admin_elections.mount(
+                        Button(election_name, id=f"admin_election_{i}")
+                    )
+            else:
+                admin_elections.mount(Label("No elections available."))
+        except Exception as e:
+            admin_elections.mount(Label(f"Error loading elections: {e}"))
+
+    def show_result(self, result: str):
+        """Show the result of visualization or generation."""
+        admin_elections = self.query_one("#admin_elections", Vertical)
+        # Clear old content
+        for child in list(admin_elections.children):
+            child.remove()
+        admin_elections.mount(Label(result))
+
     def on_button_pressed(self, event: Button.Pressed):
-        # You can implement logic to do visualization or generate some reports
         label = self.query_one("#admin_title", Label)
         if event.button.id == "visualization_btn":
-            label.update("Visualization selected. Implement logic here.")
+            self.selected_action = "visualization"
+            label.update("Visualization selected. Choose an election:")
+            self.load_elections()
         elif event.button.id == "generate_btn":
-            label.update("Generate selected. Implement logic here.")
+            self.selected_action = "generation"
+            label.update("Generation selected. Choose an election:")
+            self.load_elections()
+        elif event.button.id and event.button.id.startswith("admin_election_"):
+            selected_election = str(event.button.label)
+            # Call the appropriate RPC based on self.selected_action
+            try:
+                if self.selected_action == "visualization":
+                    result = self.app.server.visualization(selected_election)
+                    self.show_result(
+                        f"Visualization result for {selected_election}: {result}"
+                    )
+                elif self.selected_action == "generation":
+                    result = self.app.server.generation_votes(selected_election)
+                    self.show_result(
+                        f"Generation result for {selected_election}: {result}"
+                    )
+            except Exception as e:
+                self.show_result(f"Error: {e}")
 
 
 class MyApp(App):
@@ -224,7 +272,7 @@ class MyApp(App):
         self.voter_id: str = ""
 
     def on_mount(self):
-        self.server = xmlrpc.client.ServerProxy(self.server_url)
+        self.server = xmlrpc.client.ServerProxy(self.server_url, allow_none=True)
         self.push_screen(LoginScreen())
 
     def action_quit(self):

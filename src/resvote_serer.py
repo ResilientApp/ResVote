@@ -57,3 +57,11 @@ class resVoteServer:
         """Cast a vote for a candidate in an election."""
         # ToDo - create a Vote object and send it to the VoteServer
         return True
+
+    def visualization(self, election_id: str):
+        # ToDo - query visualization data from the VoteServer
+        pass
+
+    def generation_votes(self, election_id: str):
+        # ToDo - query generation votes from the VoteServer
+        pass
