@@ -33,7 +33,6 @@ git clone https://github.com/apache/incubator-resilientdb-graphql.git resilientd
 cd resilientdb-graphql
 sh ./INSTALL.sh
 pip install -r requirements.txt
-sh service/tools/start_kv_service_sdk.sh
 ```
 
 #### Running Crow service (HTTP endpoints)
