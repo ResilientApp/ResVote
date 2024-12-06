@@ -181,8 +181,61 @@ class VoteScreen(Screen):
                 label.update(f"Error casting vote: {e}")
 
 
+class CreateElectionScreen(Screen):
+    """Screen for admins to create a new election."""
+
+    BINDINGS = [
+        ("escape", "quit", "Quit"),
+        ("b", "back", "Back to Admin Screen"),
+    ]
+
+    def compose(self) -> ComposeResult:
+        yield Header(show_clock=False)
+        yield Label("Create a New Election", id="create_election_title")
+        yield Vertical(
+            Label("Enter Election ID:"),
+            Input(placeholder="Election ID", id="election_id_input"),
+            Label("Enter Candidates (comma-separated):"),
+            Input(placeholder="candidate1,candidate2", id="candidates_input"),
+            Button("Create", id="create_btn"),
+            Button("Cancel", id="cancel_btn"),
+            id="create_election_controls",
+        )
+        yield Footer()
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        election_id = self.query_one("#election_id_input", Input).value.strip()
+        candidates_str = self.query_one("#candidates_input", Input).value.strip()
+        label = self.query_one("#create_election_title", Label)
+
+        if event.button.id == "create_btn":
+            try:
+                # Pass the creator username from self.app.voter_id
+                success = self.app.server.create_election(
+                    self.app.voter_id, election_id, candidates_str
+                )
+                if success:
+                    label.update(f"Election {election_id} created successfully!")
+                    self.set_timer(2.0, self.return_to_admin)
+                else:
+                    label.update(
+                        "Failed to create election. Election may already exist."
+                    )
+            except Exception as e:
+                label.update(f"Error creating election: {e}")
+        elif event.button.id == "cancel_btn":
+            self.return_to_admin()
+
+    def return_to_admin(self):
+        # Go back to AdminScreen
+        self.app.pop_screen()
+
+    def action_back(self):
+        self.return_to_admin()
+
+
 class AdminScreen(Screen):
-    """Screen for admins with visualization and generate options."""
+    """Screen for admins with visualization, generate and create election options."""
 
     BINDINGS = [
         ("escape", "quit", "Quit"),
@@ -191,7 +244,7 @@ class AdminScreen(Screen):
 
     def __init__(self):
         super().__init__()
-        self.selected_action = None  # "visualization" or "generation"
+        self.selected_action = None  # "visualization", "generation"
         self.elections_loaded = False
 
     def compose(self) -> ComposeResult:
@@ -201,6 +254,7 @@ class AdminScreen(Screen):
             Label("Select an action:"),
             Button("Visualization", id="visualization_btn"),
             Button("Generate", id="generate_btn"),
+            Button("Create Election", id="create_election_btn"),
             id="admin_actions",
         )
         # A container for elections and results
@@ -244,6 +298,9 @@ class AdminScreen(Screen):
             self.selected_action = "generation"
             label.update("Generation selected. Choose an election:")
             self.load_elections()
+        elif event.button.id == "create_election_btn":
+            # Go to the create election screen
+            self.app.push_screen(CreateElectionScreen())
         elif event.button.id and event.button.id.startswith("admin_election_"):
             selected_election = str(event.button.label)
             # Call the appropriate RPC based on self.selected_action
@@ -272,6 +329,7 @@ class MyApp(App):
         self.voter_id: str = ""
 
     def on_mount(self):
+        # Enable allow_none if needed
         self.server = xmlrpc.client.ServerProxy(self.server_url, allow_none=True)
         self.push_screen(LoginScreen())
 
