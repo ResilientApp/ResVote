@@ -1,4 +1,4 @@
-# resVoteGenerator
+# resVote
 
 Random vote generator based on property-based testing
 
@@ -48,9 +48,16 @@ bazel-bin/service/http_server/crow_service_main service/tools/config/interface/c
 python test_driver.py 
 ```
 
-## Running this project
+## resVote Server
 
 ```sh
 source ./env.sh
-python main.py
+python app/serve.py
+```
+
+## resVote TUI Client
+
+```sh
+source ./env.sh
+python app/tui.py
 ```

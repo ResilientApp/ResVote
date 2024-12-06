@@ -1,2 +1,5 @@
 database:
   db_root_url: http://0.0.0.0:18000
+vote_server:
+  host: "localhost"
+  port: 8000
