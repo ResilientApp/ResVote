@@ -11,10 +11,22 @@ class Vote:
 
     # transfer datetime to json format
     timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    is_real: bool = True
 
     @property
     def transaction_id(self):
         return f"{self.election_id}++{self.voter_id}"
+
+
+@dataclass
+class Election:
+    election_id: str
+    candidates: list[str]
+    is_real: bool = True
+
+    @property
+    def transaction_id(self):
+        return self.election_id
 
 
 @dataclass
@@ -27,6 +39,7 @@ class Voter:
     region: str = "unknown"
     race: str = "unknown"
     education: str = "unknown"
+    is_real: bool = True
 
     @property
     def transaction_id(self) -> str:

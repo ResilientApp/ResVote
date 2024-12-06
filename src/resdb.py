@@ -12,7 +12,7 @@ import requests
 import json
 from collections import Counter
 
-from .datatype import Vote, Voter
+from .datatype import Vote, Voter, Election
 
 
 class ResDBServer:
@@ -23,7 +23,7 @@ class ResDBServer:
     def __del__(self) -> None:
         self.delete_all()
 
-    def create(self, vote: Vote | Voter) -> Maybe[str]:
+    def create(self, vote: Vote | Voter | Election) -> Maybe[str]:
         """create a single vote record in the DB,
         modified based on the original create method from resdb-orm
 

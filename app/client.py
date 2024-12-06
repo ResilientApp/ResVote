@@ -13,8 +13,10 @@ def main(config_path: str = "config.yaml"):
     username = "yfhe"
     password = "aaaa"
 
-    s.register(username, password)
-    s.login(username, password)
+    s.register(username, password, True)
+    s.login(username, password, True)
+
+    assert s.create_election("election1", "Alice,Bob,Charlie")
 
     election_ids: list[str] = s.get_elections()
     print(election_ids)

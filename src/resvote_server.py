@@ -2,15 +2,19 @@
 """
 
 from .resdb import ResDBServer
-from .datatype import Vote, Voter
+from .datatype import Vote, Voter, Election
 
 
 class resVoteServer:
     def __init__(self, config_path: str) -> None:
         self.resdb = ResDBServer(config_path)
 
+        # NOTE: store everything in memory for now
+        # should consider using a database in the future
         self.users: dict[str, Voter] = {}
         self.admins: dict[str, Voter] = {}
+        self.elections: dict[str, Election] = {}
+        self.votes: dict[str, Vote] = {}
 
     def register(self, username: str, password: str, is_admin: bool) -> bool:
         """Register a new user. If the user already exists, return False."""
@@ -43,11 +47,27 @@ class resVoteServer:
 
         return True
 
+    def create_election(self, election_id: str, candidates: str) -> bool:
+        """Create a new election.
+        candidates is string separated by comma.
+        If the election already exists, return False.
+        """
+        if election_id in self.elections:
+            return False
+
+        candidates_list = candidates.split(",")
+        new_election = Election(election_id=election_id, candidates=candidates_list)
+
+        # add election to local cache
+        self.elections[election_id] = new_election
+        # add election in ResDB
+        # ! ignoring whether the record is created successfully for now
+        _ = self.resdb.create(new_election)
+        return True
+
     def get_elections(self) -> list[str]:
         """Get a list of election IDs."""
-        # ToDo - query elections from the ResDBServer
-        election_ids = ["PRESIDENTIAL_2024_PRIMARIES", "PRESIDENTIAL_2024_GENERAL"]
-        return election_ids
+        return list(self.elections.keys())
 
     def get_candidates(self, election_id: str) -> list[str]:
         """Get a list of candidate names for a given election."""
