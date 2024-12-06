@@ -23,7 +23,7 @@ class resVoteServer:
 
         # add user to local cache
         new_user = Voter(voter_id=username, password=password, is_admin=is_admin)
-        self.users[username] = new_user
+        self.users[new_user.transaction_id] = new_user
         # add user in ResDB
         # ! ignoring whether the record is created successfully for now
         _ = self.resdb.create(new_user)
@@ -66,7 +66,7 @@ class resVoteServer:
         )
 
         # add election to local cache
-        self.elections[election_id] = new_election
+        self.elections[new_election.transaction_id] = new_election
         # add election in ResDB
         # ! ignoring whether the record is created successfully for now
         _ = self.resdb.create(new_election)
