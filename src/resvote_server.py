@@ -1,12 +1,12 @@
 """resVote Backend Server
 """
 
-from .vote_server import VoteServer
+from .vote_server import ResDBServer
 
 
-class resVoteServer:
-    def __init__(self) -> None:
-        # self.vote_server = VoteServer(config_path, log_path)
+class resResDBServer:
+    def __init__(self, config_path: str) -> None:
+        self.vote_server = ResDBServer(config_path)
         self.users: dict[str, str] = {}
         self.admins: dict[str, str] = {}
 
@@ -35,13 +35,13 @@ class resVoteServer:
 
     def get_elections(self) -> list[str]:
         """Get a list of election IDs."""
-        # ToDo - query elections from the VoteServer
+        # ToDo - query elections from the ResDBServer
         election_ids = ["PRESIDENTIAL_2024_PRIMARIES", "PRESIDENTIAL_2024_GENERAL"]
         return election_ids
 
     def get_candidates(self, election_id: str) -> list[str]:
         """Get a list of candidate names for a given election."""
-        # ToDo - query candidates from the VoteServer
+        # ToDo - query candidates from the ResDBServer
         candidates: list[str] = []
         match election_id:
             case "PRESIDENTIAL_2024_PRIMARIES":
@@ -55,13 +55,13 @@ class resVoteServer:
 
     def vote(self, election_id: str, candidate_name: str, voter_id: str) -> bool:
         """Cast a vote for a candidate in an election."""
-        # ToDo - create a Vote object and send it to the VoteServer
+        # ToDo - create a Vote object and send it to the ResDBServer
         return True
 
     def visualization(self, election_id: str):
-        # ToDo - query visualization data from the VoteServer
+        # ToDo - query visualization data from the ResDBServer
         pass
 
     def generation_votes(self, election_id: str):
-        # ToDo - query generation votes from the VoteServer
+        # ToDo - query generation votes from the ResDBServer
         pass

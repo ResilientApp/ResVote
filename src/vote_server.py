@@ -2,6 +2,7 @@
 A wrapper class for ResDBORM to manage Vote data records,
 with some helper functions and better error handling.
 """
+
 from resdb_orm import ResDBORM
 from dataclasses import asdict
 import logging
@@ -11,38 +12,19 @@ import requests
 import json
 from collections import Counter
 
-from .datatype import Vote
+from .datatype import Vote, Voter
 
-class VoteServer:
+
+class ResDBServer:
     def __init__(self, config_path: str, log_path: str | None = None) -> None:
         self.db = ResDBORM(config_path)
         self.record_ids: set[str] = set()
-        self._log_path = log_path
-        
-        if log_path is not None:
-            self.log_file = open(log_path, "a")
-            self._load_from_log()
-        
+
     def __del__(self) -> None:
         self.delete_all()
-        if self._log_path is not None:
-            self.log_file.close()
-        
-    def _load_from_log(self) -> None:
-        """load record ids from the log file if it is in the DB
-        """
-        assert self._log_path is not None
-        with open(self._log_path, "r") as f:
-            for line in f:
-                record_id = line.strip()
-                match self.read(record_id):
-                    case Some(_):
-                        self.record_ids.add(record_id)
-                    case Nothing:
-                        pass
-    
-    def create(self, vote: Vote) -> Maybe[str]:
-        """create a single vote record in the DB, 
+
+    def create(self, vote: Vote | Voter) -> Maybe[str]:
+        """create a single vote record in the DB,
         modified based on the original create method from resdb-orm
 
         Args:
@@ -52,37 +34,29 @@ class VoteServer:
             Maybe[str]: the record id if successful, Nothing otherwise
         """
         payload = {"id": vote.transaction_id, "data": asdict(vote)}
-        headers = {'Content-Type': 'application/json'}
-        
+        headers = {"Content-Type": "application/json"}
+
         try:
-            response = requests.post(f'{self.db.db_root_url}/v1/transactions/commit',
-                                 data=json.dumps(payload), headers=headers)
+            response = requests.post(
+                f"{self.db.db_root_url}/v1/transactions/commit",
+                data=json.dumps(payload),
+                headers=headers,
+            )
         except Exception as e:
-            logging.warning(f"VoteServer.create: request error {e}")
+            logging.warning(f"ResDBServer.create: request error {e}")
             return Nothing
 
-        
         # Check if response is successful and handle empty response content
         if response.status_code != 201:
             return Nothing
         if not response.content:
             return Nothing
-        decoded_content = response.content.decode('utf-8')
-        id_value = decoded_content.split(': ')[1].strip()
-            
-        # Track the ID based on its source
-        if source == "generated":
-            self.generated_ids.add(id_value)
-        elif source == "real":
-            self.real_ids.add(id_value)
-
-        # Optionally log the ID
-        if self._log_path is not None:
-            self.log_file.write(f"{id_value} ({source})\n")
+        decoded_content = response.content.decode("utf-8")
+        id_value = decoded_content.split(": ")[1].strip()
 
         return Some(id_value)
-    
-    def create_all(self, votes: list[Vote]) -> list[Maybe[str]]:
+
+    def create_all(self, votes: list[Vote] | list[Voter]) -> list[Maybe[str]]:
         """create multiple vote records in the DB
 
         Args:
@@ -92,50 +66,38 @@ class VoteServer:
             list[str]: a list of record ids
         """
         return list(map(self.create, votes))
-        
-    def read(self, record_id: str) -> Maybe[Vote]:
+
+    def read(self, transaction_id: str) -> Maybe[dict[str, Any]]:
         """read a single vote record from the DB
 
         Args:
-            record_id (str): the record id to be read
+            transaction_id (str): the record id to be read
 
         Returns:
             Maybe[Vote]: the vote record if successful, Nothing otherwise
         """
         try:
-            response = self.db.read(record_id)
+            response = self.db.read(transaction_id)
         except Exception as e:
-            logging.warning(f"VoteServer.read: request error {e}")
+            logging.warning(f"ResDBServer.read: request error {e}")
             return Nothing
-        
+
         if not isinstance(response, dict):
             if isinstance(response, str):
-                logging.warning(f"VoteServer.read: {response}")
+                logging.warning(f"ResDBServer.read: {response}")
             else:
-                logging.warning("VoteServer.read: unknown error from ResDB.")
+                logging.warning("ResDBServer.read: unknown error from ResDB.")
             return Nothing
-        
+
         try:
-            assert record_id == response["id"]
+            assert transaction_id == response["id"]
             vote_data = response["data"]
         except KeyError as e:
-            logging.warning(f"VoteServer.read: KeyError {e}")
+            logging.warning(f"ResDBServer.read: KeyError {e}")
             return Nothing
-        
-        return Some(Vote(**vote_data))
-    
-    # def read_all(self) -> list[Vote]:
-    #     votes = [self.read(rid).unwrap() for rid in self.record_ids]
-    #     return votes
 
-    def read_generated(self) -> list[Vote]:
-        """Retrieve all generated votes."""
-        return [self.read(record_id).unwrap() for record_id in self.generated_ids if self.read(record_id).is_some()]
+        return Some(vote_data)
 
-    def read_real(self) -> list[Vote]:
-        """Retrieve all real votes."""
-        return [self.read(record_id).unwrap() for record_id in self.real_ids if self.read(record_id).is_some()]
-    
     def db_read_all(self) -> Any:
         """read all data records from the DB, no matter if it is created by this server or not
 
@@ -147,19 +109,21 @@ class VoteServer:
         except Exception as e:
             logging.warning(e)
             return None
-        
+
         return response
-        
 
     def delete_all(self):
-        """delete all data records managed by this server
-        """
-        
+        """delete all data records managed by this server"""
+
         for rid in self.record_ids:
             response = self.db.delete(rid)
-            if isinstance(response, dict) and "status" in response and response["status"] != "delete successful":
+            if (
+                isinstance(response, dict)
+                and "status" in response
+                and response["status"] != "delete successful"
+            ):
                 logging.warning(response["status"])
-            
+
     def db_delete_all(self):
         """delete all data records in the DB"""
         try:
@@ -167,53 +131,54 @@ class VoteServer:
         except Exception as e:
             logging.warning(e)
             return
-        
+
         for record in response:
             self.db.delete(record["id"])
-    
-    def get(self, election_id: str, voter_id: str) -> Maybe[Vote]:
-        """Retrieve a vote by election_id and voter_id.
 
-        Args:
-            election_id (str): The election ID.
-            voter_id (str): The voter ID.
+    # def get(self, election_id: str, voter_id: str) -> Maybe[Vote]:
+    #     """Retrieve a vote by election_id and voter_id.
 
-        Returns:
-            Maybe[Vote]: The corresponding Vote object if found, Nothing otherwise.
-        """
-        for record_id in self.record_ids:
-            vote = self.read(record_id).unwrap_or(None)
-            if vote and vote.election_id == election_id and vote.voter_id == voter_id:
-                return Some(vote)
-        return Nothing
+    #     Args:
+    #         election_id (str): The election ID.
+    #         voter_id (str): The voter ID.
 
-    def total_votes(self, election_id: str) -> int:
-        """Get the total number of votes in an election.
+    #     Returns:
+    #         Maybe[Vote]: The corresponding Vote object if found, Nothing otherwise.
+    #     """
+    #     for record_id in self.record_ids:
+    #         vote = self.read(record_id).unwrap_or(None)
+    #         if vote and vote.election_id == election_id and vote.voter_id == voter_id:
+    #             return Some(vote)
+    #     return Nothing
 
-        Args:
-            election_id (str): The election ID.
+    # def total_votes(self, election_id: str) -> int:
+    #     """Get the total number of votes in an election.
 
-        Returns:
-            int: Total number of votes in the election.
-        """
-        return sum(
-            1 for record_id in self.record_ids
-            if self.read(record_id).unwrap_or(None) and self.read(record_id).unwrap().election_id == election_id
-        )
+    #     Args:
+    #         election_id (str): The election ID.
 
-    def votes_per_candidate(self, election_id: str) -> dict[str, int]:
-        """Get the number of votes each candidate received in an election.
+    #     Returns:
+    #         int: Total number of votes in the election.
+    #     """
+    #     return sum(
+    #         1
+    #         for record_id in self.record_ids
+    #         if self.read(record_id).unwrap_or(None)
+    #         and self.read(record_id).unwrap().election_id == election_id
+    #     )
 
-        Args:
-            election_id (str): The election ID.
+    # def votes_per_candidate(self, election_id: str) -> dict[str, int]:
+    #     """Get the number of votes each candidate received in an election.
 
-        Returns:
-            dict[str, int]: A dictionary with candidates as keys and their vote counts as values.
-        """
-        candidate_votes = Counter()
-        for record_id in self.record_ids:
-            vote = self.read(record_id).unwrap_or(None)
-            if vote and vote.election_id == election_id:
-                candidate_votes[vote.candidate] += 1
-        return dict(candidate_votes)
-            
+    #     Args:
+    #         election_id (str): The election ID.
+
+    #     Returns:
+    #         dict[str, int]: A dictionary with candidates as keys and their vote counts as values.
+    #     """
+    #     candidate_votes = Counter()
+    #     for record_id in self.record_ids:
+    #         vote = self.read(record_id).unwrap_or(None)
+    #         if vote and vote.election_id == election_id:
+    #             candidate_votes[vote.candidate] += 1
+    #     return dict(candidate_votes)
