@@ -24,6 +24,7 @@ export default function ElectionsView(params) {
     const [electionToVoteIn, setElectionToVoteIn] = useState(null);
     const [createElection, setCreateElection] = useState(false);
 
+
     return (
         <div className="electionContainer">
             {/* Only render CreateElection or the button when createElection is true */}

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import ResVaultSDK from 'resvault-sdk';
+import { Button } from "antd";
 import "./VoteInElectionView.css"
 
 const VOTE_USER_KEYS = {
@@ -20,7 +21,7 @@ const VOTE_USER_KEYS = {
  */
 export default function VoteInElectionView(params) {
     const { election, token, setElectionToVoteIn } = params
-    const { description, electionID, candidates } = election;
+    const { description, name, candidates } = election;
     const [selectedCandidate, setSelectedCandidate] = useState("");
 
     const sdkRef = useRef(null);
@@ -74,7 +75,7 @@ export default function VoteInElectionView(params) {
                     data: {
                         "type": "vote",
                         "candidate": selectedCandidate,
-                        "election": electionID
+                        "election": name
                     },
                     recipient: VOTE_USER_KEYS["pub_key"],
                 });
@@ -87,20 +88,25 @@ export default function VoteInElectionView(params) {
             }
         }
     }
+    console.log("Selected Candidate = ", selectedCandidate);
     return (
         <>
-            <h1>Vote in Election: {electionID}</h1>
+            <Button onClick={() => setElectionToVoteIn(null)}>Exit</Button>
+            <h1>Vote in Election: {name}</h1>
             <h2>{description}</h2>
             <form onSubmit={handleSubmit}>
                 {candidates.map(candidate => {
-                    <label for={candidate}>{
-                        candidate}: <input 
-                                        type="radio" 
-                                        id={candidate} 
-                                        name={candidate}
-                                        value={candidate}
-                                        onChange={() => setSelectedCandidate(candidate)}/>
-                    </label>
+                    return (
+                        <label for={candidate}>{
+                            candidate}: <input 
+                                            type="radio" 
+                                            id={candidate} 
+                                            name="candidate"
+                                            value={candidate}
+                                            onClick={() => setSelectedCandidate(candidate)}
+                                        />
+                        </label>
+                    )
                 })}
                 <input type="submit" value="Vote!" />
             </form>

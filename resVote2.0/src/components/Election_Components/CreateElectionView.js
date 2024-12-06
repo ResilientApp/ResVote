@@ -94,7 +94,7 @@ export default function CreateElectionView(params) {
     }
 
     function removeCandidate(toRemove) {
-        setCandidates(candidates.filter(candidate => candidate != toRemove))
+        setCandidates(candidates.filter(candidate => candidate !== toRemove))
     }
 
     return (

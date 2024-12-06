@@ -16,15 +16,21 @@ import "./ElectionTableView.css";
  */
 function SelectElection(params) { 
     const { election, setElectionToVoteIn } = params;
-    const { description, electionID, candidates } = election;
+    const { description, name, candidates } = election;
     return (
         // Just make a table row with election info and a button that can be used to select 
         // a particular election to vote in
         <>
             <tr>
+                <td>{name}</td>
                 <td>{description}</td>
-                <td>{electionID}</td>
-                <td>{candidates}</td>
+                <td>{candidates.map((candidate) => {
+                    return (
+                        <ul>
+                            <li>{candidate}</li>
+                        </ul>
+                    )
+                })}</td>
                 <td><Button onClick={() => setElectionToVoteIn(election)}>Vote</Button></td>
             </tr>
         </>
@@ -50,8 +56,8 @@ export default function ElectionTableView(params) {
             <table>
                 <thead>
                     <tr>
+                        <th>Election Name</th>
                         <th>Election Description</th>
-                        <th>Election ID</th>
                         <th>Election Candidates</th>
                         <th>Vote in Election</th>
                     </tr>
@@ -59,7 +65,7 @@ export default function ElectionTableView(params) {
                 <tbody>
                     {availableElections.map(election => (
                         <SelectElection 
-                            key={election.electionID} 
+                            key={election.name} 
                             election={election} 
                             setElectionToVoteIn={setElectionToVoteIn} 
                         />
