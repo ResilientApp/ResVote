@@ -69,23 +69,43 @@ class MainScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Header(show_clock=False)
         yield Label("Main Menu", id="main_title")
+        # Create a container that will hold the elections once loaded
         yield Vertical(
-            Label("Welcome! Choose an option:"),
-            Button("Option 1", id="opt1_btn"),
-            Button("Option 2", id="opt2_btn"),
-            Button("Option 3", id="opt3_btn"),
+            Label("Loading elections...", id="loading_label"), id="election_list"
         )
         yield Footer()
 
+    def on_mount(self) -> None:
+        # Fetch elections from the server and update UI
+        self.load_elections()
+
+    def load_elections(self):
+        try:
+            elections = self.app.server.get_elections()  # returns list[str]
+            election_list = self.query_one("#election_list", Vertical)
+
+            # Remove existing children (including the loading label) by calling remove() on each child
+            for child in list(election_list.children):
+                child.remove()
+
+            if elections:
+                election_list.mount(Label("Welcome! Choose an election:"))
+                for i, election_name in enumerate(elections):
+                    election_list.mount(Button(election_name, id=f"election_{i}"))
+            else:
+                election_list.mount(Label("No elections available."))
+
+        except Exception as e:
+            election_list = self.query_one("#election_list", Vertical)
+            # Remove all children before showing error
+            for child in list(election_list.children):
+                child.remove()
+            election_list.mount(Label(f"Error loading elections: {e}"))
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         label = self.query(Label).first()
-        # Example of further server interaction could go here
-        if event.button.id == "opt1_btn":
-            label.update("You selected Option 1.")
-        elif event.button.id == "opt2_btn":
-            label.update("You selected Option 2.")
-        elif event.button.id == "opt3_btn":
-            label.update("You selected Option 3.")
+        # When an election is selected, update the label
+        label.update(f"You selected {event.button.label}.")
 
 
 class MyApp(App):

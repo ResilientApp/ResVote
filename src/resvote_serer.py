@@ -29,3 +29,9 @@ class resVoteServer:
             return False
 
         return True
+
+    def get_elections(self) -> list[str]:
+        """Get a list of election IDs."""
+        # ToDo - query elections from the VoteServer
+        election_ids = ["PRESIDENTIAL_2024_PRIMARIES", "PRESIDENTIAL_2024_GENERAL"]
+        return election_ids

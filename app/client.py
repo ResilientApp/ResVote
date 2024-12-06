@@ -9,12 +9,7 @@ def main(config_path: str = "config.yaml"):
     url = f"http://{host}:{port}"
     s = xmlrpc.client.ServerProxy(url)
 
-    assert not s.login("yfhe", "aaaa")
-
-    assert s.register("yfhe", "aaaa")
-    assert s.login("yfhe", "aaaa")
-
-    assert not s.register("yfhe", "bbb")
+    print(s.get_elections())
 
 
 if __name__ == "__main__":
