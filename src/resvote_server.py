@@ -1,12 +1,12 @@
 """resVote Backend Server
 """
 
-from .vote_server import ResDBServer
+from .resdb import ResDBServer
 
 
 class resResDBServer:
     def __init__(self, config_path: str) -> None:
-        self.vote_server = ResDBServer(config_path)
+        self.resdb = ResDBServer(config_path)
         self.users: dict[str, str] = {}
         self.admins: dict[str, str] = {}
 

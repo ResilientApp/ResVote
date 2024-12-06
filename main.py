@@ -5,7 +5,7 @@ from hypothesis import given
 from hypothesis.strategies import lists
 
 from src.datatype import Vote
-from src.vote_server import ResDBServer
+from src.resdb import ResDBServer
 from src.generator import vote_list_gen
 from src.json_utils import save_votes_to_json
 from src.visualization import (
