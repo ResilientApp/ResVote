@@ -2,13 +2,15 @@
 """
 
 from .resdb import ResDBServer
+from .datatype import Vote, Voter
 
 
-class resResDBServer:
+class resVoteServer:
     def __init__(self, config_path: str) -> None:
         self.resdb = ResDBServer(config_path)
-        self.users: dict[str, str] = {}
-        self.admins: dict[str, str] = {}
+
+        self.users: dict[str, Voter] = {}
+        self.admins: dict[str, Voter] = {}
 
     def register(self, username: str, password: str, is_admin: bool) -> bool:
         """Register a new user. If the user already exists, return False."""
@@ -16,7 +18,13 @@ class resResDBServer:
         if username in record_dict:
             return False
 
-        record_dict[username] = password
+        # add user to local cache
+        new_user = Voter(voter_id=username, password=password)
+        record_dict[username] = new_user
+        # add user in ResDB
+        # ! ignoring whether the record is created successfully for now
+        _ = self.resdb.create(new_user)
+
         return True
 
     def login(self, username: str, password: str, is_admin: bool) -> bool:
@@ -28,7 +36,9 @@ class resResDBServer:
         if username not in record_dict:
             return False
 
-        if record_dict[username] != password:
+        # NOTE: should send request to ResDB to verify the password for security reasons
+        # ! ignoring the verification for now
+        if record_dict[username].password != password:
             return False
 
         return True

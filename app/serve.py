@@ -4,7 +4,7 @@ import fire
 import logging
 import sys
 from src.util import load_server_config
-from src.resresdb import resResDBServer
+from src.resvote_server import resVoteServer
 
 
 def serve(config_path: str = "config.yaml"):
@@ -17,7 +17,7 @@ def serve(config_path: str = "config.yaml"):
         (host, port), requestHandler=SimpleXMLRPCRequestHandler
     ) as server:
         server.register_introspection_functions()
-        server.register_instance(resResDBServer())
+        server.register_instance(resVoteServer(config_path))
 
         try:
             server.serve_forever()
