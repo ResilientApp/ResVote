@@ -14,7 +14,7 @@ def main(config_path: str = "config.yaml"):
     password = "aaaa"
 
     s.register(username, password, True)
-    s.login(username, password, True)
+    s.login(username, password)
 
     assert s.create_election(username, "election0", "Alice,Bob,Charlie")
     assert s.create_election(username, "election2", "aa,bb,cc")
@@ -28,7 +28,7 @@ def main(config_path: str = "config.yaml"):
 
     election_id = "election0"
     assert s.create_vote(username, election_id, "Alice")
-    
+
     votes = s.get_votes(election_id)
     print(votes)
 

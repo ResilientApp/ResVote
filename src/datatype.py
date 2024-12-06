@@ -41,6 +41,7 @@ class Voter:
     race: str = "unknown"
     education: str = "unknown"
     is_real: bool = True
+    is_admin: bool = False
 
     @property
     def transaction_id(self) -> str:

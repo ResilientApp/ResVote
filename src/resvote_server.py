@@ -12,37 +12,34 @@ class resVoteServer:
         # NOTE: store everything in memory for now
         # should consider using a database in the future
         self.users: dict[str, Voter] = {}
-        self.admins: dict[str, Voter] = {}
         self.elections: dict[str, Election] = {}
         self.votes: dict[str, Vote] = {}
 
     def register(self, username: str, password: str, is_admin: bool) -> bool:
         """Register a new user. If the user already exists, return False."""
-        record_dict = self.admins if is_admin else self.users
-        if username in record_dict:
+        if username in self.users:
             return False
 
         # add user to local cache
-        new_user = Voter(voter_id=username, password=password)
-        record_dict[username] = new_user
+        new_user = Voter(voter_id=username, password=password, is_admin=is_admin)
+        self.users[username] = new_user
         # add user in ResDB
         # ! ignoring whether the record is created successfully for now
         _ = self.resdb.create(new_user)
 
         return True
 
-    def login(self, username: str, password: str, is_admin: bool) -> bool:
+    def login(self, username: str, password: str) -> bool:
         """Login a user.
         If the user does not exist or the password is incorrect,
         return False.
         """
-        record_dict = self.admins if is_admin else self.users
-        if username not in record_dict:
+        if username not in self.users:
             return False
 
         # NOTE: should send request to ResDB to verify the password for security reasons
         # ! ignoring the verification for now
-        if record_dict[username].password != password:
+        if self.users[username].password != password:
             return False
 
         return True
@@ -54,7 +51,7 @@ class resVoteServer:
         If the creator is not an admin, return False.
         """
         # check if creator is an admin
-        if creator not in self.admins:
+        if creator not in self.users and not self.users[creator].is_admin:
             return False
 
         if election_id in self.elections:
@@ -100,7 +97,7 @@ class resVoteServer:
             return False
 
         # NOTE: admin can also vote
-        if voter_id not in self.users and voter_id not in self.admins:
+        if voter_id not in self.users and not self.users[voter_id].is_admin:
             print(f"voter_id {voter_id} not in the users")
             return False
 
