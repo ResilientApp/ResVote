@@ -47,16 +47,25 @@ class resVoteServer:
 
         return True
 
-    def create_election(self, election_id: str, candidates: str) -> bool:
+    def create_election(self, creator: str, election_id: str, candidates: str) -> bool:
         """Create a new election.
         candidates is string separated by comma.
         If the election already exists, return False.
+        If the creator is not an admin, return False.
         """
+        # check if creator is an admin
+        if creator not in self.admins:
+            return False
+
         if election_id in self.elections:
             return False
 
         candidates_list = candidates.split(",")
-        new_election = Election(election_id=election_id, candidates=candidates_list)
+        new_election = Election(
+            election_id=election_id,
+            candidates=candidates_list,
+            creator=creator,
+        )
 
         # add election to local cache
         self.elections[election_id] = new_election
