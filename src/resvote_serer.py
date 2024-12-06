@@ -7,25 +7,28 @@ from .vote_server import VoteServer
 class resVoteServer:
     def __init__(self) -> None:
         # self.vote_server = VoteServer(config_path, log_path)
-        self.recorded_users: dict[str, str] = {}
+        self.users: dict[str, str] = {}
+        self.admins: dict[str, str] = {}
 
-    def register(self, username: str, password: str) -> bool:
+    def register(self, username: str, password: str, is_admin: bool) -> bool:
         """Register a new user. If the user already exists, return False."""
-        if username in self.recorded_users:
+        record_dict = self.admins if is_admin else self.users
+        if username in record_dict:
             return False
 
-        self.recorded_users[username] = password
+        record_dict[username] = password
         return True
 
-    def login(self, username: str, password: str) -> bool:
+    def login(self, username: str, password: str, is_admin: bool) -> bool:
         """Login a user.
         If the user does not exist or the password is incorrect,
         return False.
         """
-        if username not in self.recorded_users:
+        record_dict = self.admins if is_admin else self.users
+        if username not in record_dict:
             return False
 
-        if self.recorded_users[username] != password:
+        if record_dict[username] != password:
             return False
 
         return True

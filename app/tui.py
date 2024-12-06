@@ -2,17 +2,21 @@ import xmlrpc.client
 import fire
 from textual.app import App, ComposeResult
 from textual.containers import Vertical, Horizontal
-from textual.widgets import Header, Footer, Button, Input, Label
+from textual.widgets import Header, Footer, Button, Input, Label, Static
 from textual.screen import Screen
 from src.util import load_server_config
 
 
 class LoginScreen(Screen):
-    """Screen for user login or registration."""
+    """Screen for user login or registration with admin/user selection."""
 
     BINDINGS = [
         ("escape", "quit", "Quit"),
     ]
+
+    def __init__(self):
+        super().__init__()
+        self.is_admin = False
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=False)
@@ -21,6 +25,11 @@ class LoginScreen(Screen):
             Label("Please enter your credentials:"),
             Input(placeholder="Username", id="username_input"),
             Input(placeholder="Password", id="password_input", password=True),
+            Label("Select Role:", id="role_label"),
+            Horizontal(
+                Button("User", id="user_role_btn"),
+                Button("Admin", id="admin_role_btn"),
+            ),
             Horizontal(
                 Button("Login", id="login_btn"),
                 Button("Register", id="register_btn"),
@@ -33,14 +42,26 @@ class LoginScreen(Screen):
         password = self.query_one("#password_input", Input).value.strip()
         message_label = self.query(Label).first()
 
-        if event.button.id == "login_btn":
+        if event.button.id == "user_role_btn":
+            self.is_admin = False
+            message_label.update("Selected role: User")
+        elif event.button.id == "admin_role_btn":
+            self.is_admin = True
+            message_label.update("Selected role: Admin")
+
+        elif event.button.id == "login_btn":
             try:
-                success = self.app.server.login(username, password)
+                success = self.app.server.login(username, password, self.is_admin)
                 if success:
-                    self.app.voter_id = username  # Store username as voter_id
-                    self.app.push_screen(MainScreen())
+                    self.app.voter_id = username
+                    if self.is_admin:
+                        self.app.push_screen(AdminScreen())
+                    else:
+                        self.app.push_screen(MainScreen())
                 else:
-                    message_label.update("Login failed. Invalid username or password.")
+                    message_label.update(
+                        "Login failed. Invalid username or password or role."
+                    )
                     self.query_one("#username_input", Input).value = ""
                     self.query_one("#password_input", Input).value = ""
             except Exception as e:
@@ -48,10 +69,13 @@ class LoginScreen(Screen):
 
         elif event.button.id == "register_btn":
             try:
-                success = self.app.server.register(username, password)
+                success = self.app.server.register(username, password, self.is_admin)
                 if success:
-                    self.app.voter_id = username  # Store username as voter_id
-                    self.app.push_screen(MainScreen())
+                    self.app.voter_id = username
+                    if self.is_admin:
+                        self.app.push_screen(AdminScreen())
+                    else:
+                        self.app.push_screen(MainScreen())
                 else:
                     message_label.update("Registration failed. User already exists.")
                     self.query_one("#username_input", Input).value = ""
@@ -61,7 +85,7 @@ class LoginScreen(Screen):
 
 
 class MainScreen(Screen):
-    """Main menu screen displayed after login."""
+    """Main menu screen displayed after login for regular users."""
 
     BINDINGS = [
         ("escape", "quit", "Quit"),
@@ -155,13 +179,39 @@ class VoteScreen(Screen):
                     label.update(
                         f"Your vote for {selected_candidate} in {self.election_name} has been recorded. Exiting..."
                     )
-                    # After showing the message, wait a moment and then exit
-
                     self.set_timer(2.0, self.app.exit)
                 else:
                     label.update("Failed to cast vote. Please try again.")
             except Exception as e:
                 label.update(f"Error casting vote: {e}")
+
+
+class AdminScreen(Screen):
+    """Screen for admins with visualization and generate options."""
+
+    BINDINGS = [
+        ("escape", "quit", "Quit"),
+        ("b", "back", "Back to Login"),
+    ]
+
+    def compose(self) -> ComposeResult:
+        yield Header(show_clock=False)
+        yield Label("Admin Menu", id="admin_title")
+        yield Vertical(
+            Label("Select an action:"),
+            Button("Visualization", id="visualization_btn"),
+            Button("Generate", id="generate_btn"),
+            id="admin_actions",
+        )
+        yield Footer()
+
+    def on_button_pressed(self, event: Button.Pressed):
+        # You can implement logic to do visualization or generate some reports
+        label = self.query_one("#admin_title", Label)
+        if event.button.id == "visualization_btn":
+            label.update("Visualization selected. Implement logic here.")
+        elif event.button.id == "generate_btn":
+            label.update("Generate selected. Implement logic here.")
 
 
 class MyApp(App):
