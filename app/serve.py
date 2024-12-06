@@ -4,7 +4,7 @@ import fire
 import logging
 import sys
 from src.util import load_server_config
-from src.resvote_serer import resVoteServer
+from src.resvote_server import resVoteServer
 
 
 def serve(config_path: str = "config.yaml"):
