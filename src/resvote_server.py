@@ -80,16 +80,10 @@ class resVoteServer:
 
     def get_candidates(self, election_id: str) -> list[str]:
         """Get a list of candidate names for a given election."""
-        # ToDo - query candidates from the ResDBServer
-        candidates: list[str] = []
-        match election_id:
-            case "PRESIDENTIAL_2024_PRIMARIES":
-                candidates = ["Alice", "Bob", "Charlie"]
-            case "PRESIDENTIAL_2024_GENERAL":
-                candidates = ["David", "Eve"]
-            case _:
-                pass
+        if election_id not in self.elections:
+            return []
 
+        candidates = self.elections[election_id].candidates
         return candidates
 
     def vote(self, election_id: str, candidate_name: str, voter_id: str) -> bool:
