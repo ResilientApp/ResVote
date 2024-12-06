@@ -29,8 +29,8 @@ cd resilientdb
 ### Graph QL
 
 ```sh
-git clone https://github.com/apache/incubator-resilientdb-python-sdk sdk
-cd sdk
+git clone https://github.com/apache/incubator-resilientdb-graphql.git resilientdb-graphql
+cd resilientdb-graphql
 sh ./INSTALL.sh
 pip install -r requirements.txt
 sh service/tools/start_kv_service_sdk.sh
