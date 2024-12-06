@@ -27,10 +27,15 @@ def main(config_path: str = "config.yaml"):
         print(candidates)
 
     election_id = "election0"
-    assert s.create_vote(username, election_id, "Alice")
+    s.generate_random_votes(election_id)
+
+    # voters = s.get_voters()
+    # for v in voters:
+    #     print(v)
 
     votes = s.get_votes(election_id)
-    print(votes)
+    for v in votes:
+        print(v)
 
 
 if __name__ == "__main__":

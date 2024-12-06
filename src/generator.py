@@ -27,9 +27,6 @@ def voter_gen(draw) -> Voter:
     education = draw(
         st.sampled_from(["unknown", "highschool", "bachelor", "master", "phd"])
     )
-    is_real = draw(st.just(False))
-    is_admin = draw(st.just(False))
-
     return Voter(
         voter_id=voter_id,
         password=password,
@@ -38,19 +35,29 @@ def voter_gen(draw) -> Voter:
         region=region,
         race=race,
         education=education,
-        is_real=is_real,
-        is_admin=is_admin,
+        is_real=False,
+        is_admin=False,
     )
 
 
 @composite
-def vote_gen(draw) -> tuple[Voter, Vote]:
+def vote_gen(draw, election_id, candidate_pool) -> tuple[Voter, Vote]:
     voter = draw(voter_gen())
     return voter, Vote(
-        election_id=TEST_ELECTION_ID,
-        candidate_name=draw(sampled_from(CANDIDATE_POOL)),
+        election_id=election_id,
+        candidate_name=draw(sampled_from(candidate_pool)),
         voter_id=voter.voter_id,
+        is_real=False,
     )
 
 
-vote_list_gen = lists(vote_gen(), min_size=50, max_size=100)
+def vote_list_gen(election_id, candidate_pool):
+    return lists(
+        vote_gen(election_id=election_id, candidate_pool=candidate_pool),
+        min_size=50,
+        max_size=100,
+    )
+
+
+def generate_votes(election_id, candidate_pool) -> list[tuple[Voter, Vote]]:
+    return vote_list_gen(election_id, candidate_pool).example()  # type: ignore

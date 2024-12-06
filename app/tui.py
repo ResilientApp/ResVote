@@ -311,7 +311,7 @@ class AdminScreen(Screen):
                         f"Visualization result for {selected_election}: {result}"
                     )
                 elif self.selected_action == "generation":
-                    result = self.app.server.generation_votes(selected_election)
+                    result = self.app.server.generate_random_votes(selected_election)
                     self.show_result(
                         f"Generation result for {selected_election}: {result}"
                     )

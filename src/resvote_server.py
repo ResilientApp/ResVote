@@ -3,6 +3,7 @@
 
 from .resdb import ResDBServer
 from .datatype import Vote, Voter, Election
+from .generator import generate_votes
 
 
 class resVoteServer:
@@ -125,6 +126,20 @@ class resVoteServer:
         # ToDo - query visualization data from the ResDBServer
         pass
 
-    def generation_votes(self, election_id: str):
-        # ToDo - query generation votes from the ResDBServer
-        pass
+    def generate_random_votes(self, election_id: str) -> bool:
+        """generate fake votes for visualization and testing"""
+
+        if election_id not in self.elections:
+            return False
+
+        vs = generate_votes(election_id, self.elections[election_id].candidates)
+
+        for voter, vote in vs:
+            if voter.voter_id not in self.users:
+                self.users[voter.voter_id] = voter
+                _ = self.resdb.create(voter)
+
+                self.votes[vote.transaction_id] = vote
+                _ = self.resdb.create(vote)
+
+        return True

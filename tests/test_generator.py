@@ -4,20 +4,18 @@ from hypothesis.strategies import lists
 
 from src.datatype import Vote, Voter
 from src.resdb import ResDBServer
-from src.generator import vote_list_gen
+from src.generator import generate_votes
 
 
-def generate_votes() -> list[tuple[Voter, Vote]]:
-    return vote_list_gen.example()
+def main() -> None:
+    TEST_ELECTION_ID = "election_123"
+    CANDIDATE_POOL = ["Alice", "Bob", "Charlie"]
 
-
-def main(config_path: str = "config.yaml") -> None:
-    vs = generate_votes()
+    vs = generate_votes(TEST_ELECTION_ID, CANDIDATE_POOL)
 
     for voter, vote in vs:
         print(voter)
         print(vote)
-        print("========")
 
 
 if __name__ == "__main__":

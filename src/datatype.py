@@ -23,7 +23,6 @@ class Election:
     election_id: str
     candidates: list[str]
     creator: str
-    is_real: bool = True
 
     @property
     def transaction_id(self):
