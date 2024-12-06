@@ -5,16 +5,36 @@ from src.util import load_server_config
 import logging
 
 
-def add(x, y):
-    return x + y
+recorded_users: dict[str, str] = {}
 
 
-def mul(x, y):
-    return x * y
+def register(username, password):
+    """register a new user. If the user already exists, return False."""
+    if username in recorded_users:
+        logging.info(f"User {username} already exists.")
+        return False
+
+    logging.info(f"Registering user {username}.")
+    recorded_users[username] = password
+    return True
+
+
+def login(username, password) -> bool:
+    """login a user. If the user does not exist or the password is incorrect, return False."""
+    if username not in recorded_users:
+        logging.info(f"User {username} does not exist.")
+        return False
+
+    if recorded_users[username] != password:
+        logging.info(f"Password for user {username} is incorrect.")
+        return False
+
+    logging.info(f"User {username} logged in.")
+    return True
 
 
 def serve(config_path: str = "config.yaml"):
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.WARNING)
 
     host, port = load_server_config(config_path).unwrap()
 
@@ -24,8 +44,8 @@ def serve(config_path: str = "config.yaml"):
     ) as server:
         server.register_introspection_functions()
 
-        server.register_function(add, "add")
-        server.register_function(mul, "mul")
+        server.register_function(register, "register")
+        server.register_function(login, "login")
 
         server.serve_forever()
 

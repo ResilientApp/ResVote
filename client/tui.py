@@ -1,7 +1,10 @@
+import xmlrpc.client
+import fire
 from textual.app import App, ComposeResult
 from textual.containers import Vertical, Horizontal
 from textual.widgets import Header, Footer, Button, Input, Label
 from textual.screen import Screen
+from src.util import load_server_config
 
 
 class LoginScreen(Screen):
@@ -12,7 +15,6 @@ class LoginScreen(Screen):
     ]
 
     def compose(self) -> ComposeResult:
-        # Remove title argument from Header
         yield Header(show_clock=False)
         yield Label("Login Screen", id="login_title")
         yield Vertical(
@@ -27,26 +29,33 @@ class LoginScreen(Screen):
         yield Footer()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        username = self.query_one("#username_input", Input).value
-        password = self.query_one("#password_input", Input).value
+        username = self.query_one("#username_input", Input).value.strip()
+        password = self.query_one("#password_input", Input).value.strip()
+        message_label = self.query(Label).first()
 
         if event.button.id == "login_btn":
-            # Mock check for login
-            if username == "user" and password == "pass":
-                self.app.push_screen(MainScreen())
-            else:
-                self.query(Label).first().update("Invalid credentials. Try again.")
-                self.query_one("#username_input", Input).value = ""
-                self.query_one("#password_input", Input).value = ""
+            try:
+                success = self.app.server.login(username, password)
+                if success:
+                    self.app.push_screen(MainScreen())
+                else:
+                    message_label.update("Login failed. Invalid username or password.")
+                    self.query_one("#username_input", Input).value = ""
+                    self.query_one("#password_input", Input).value = ""
+            except Exception as e:
+                message_label.update(f"Error connecting to server: {e}")
 
         elif event.button.id == "register_btn":
-            # Mock registration logic
-            if username and password:
-                self.app.push_screen(MainScreen())
-            else:
-                self.query(Label).first().update(
-                    "Please provide both username and password to register."
-                )
+            try:
+                success = self.app.server.register(username, password)
+                if success:
+                    self.app.push_screen(MainScreen())
+                else:
+                    message_label.update("Registration failed. User already exists.")
+                    self.query_one("#username_input", Input).value = ""
+                    self.query_one("#password_input", Input).value = ""
+            except Exception as e:
+                message_label.update(f"Error connecting to server: {e}")
 
 
 class MainScreen(Screen):
@@ -70,6 +79,7 @@ class MainScreen(Screen):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         label = self.query(Label).first()
+        # Example of further server interaction could go here
         if event.button.id == "opt1_btn":
             label.update("You selected Option 1.")
         elif event.button.id == "opt2_btn":
@@ -81,16 +91,24 @@ class MainScreen(Screen):
 class MyApp(App):
     """Main application class."""
 
+    def __init__(self, server_url: str):
+        super().__init__()
+        self.server_url = server_url
+        self.server: xmlrpc.client.ServerProxy
+
     def on_mount(self):
+        # Initialize the server proxy once here, so all screens can use it
+        self.server = xmlrpc.client.ServerProxy(self.server_url)
+        # Start the app on the login screen
         self.push_screen(LoginScreen())
 
-    # def action_quit(self):
-    #     self.exit()
 
-    # def action_back(self):
-    #     self.pop_screen()
+def main(config_path: str = "config.yaml"):
+    host, port = load_server_config(config_path).unwrap()
+    server_url = f"http://{host}:{port}"
+    app = MyApp(server_url=server_url)
+    app.run()
 
 
 if __name__ == "__main__":
-    app = MyApp()
-    app.run()
+    fire.Fire(main)
