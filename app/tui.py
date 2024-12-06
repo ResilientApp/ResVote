@@ -37,6 +37,7 @@ class LoginScreen(Screen):
             try:
                 success = self.app.server.login(username, password)
                 if success:
+                    self.app.voter_id = username  # Store username as voter_id
                     self.app.push_screen(MainScreen())
                 else:
                     message_label.update("Login failed. Invalid username or password.")
@@ -49,6 +50,7 @@ class LoginScreen(Screen):
             try:
                 success = self.app.server.register(username, password)
                 if success:
+                    self.app.voter_id = username  # Store username as voter_id
                     self.app.push_screen(MainScreen())
                 else:
                     message_label.update("Registration failed. User already exists.")
@@ -100,11 +102,11 @@ class MainScreen(Screen):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         # When the user selects an election, get the candidates from the server.
         if event.button.id and event.button.id.startswith("election_"):
-            selected_election = event.button.label
+            selected_election = str(event.button.label)
             label = self.query(Label).first()
 
-            candidates = self.app.server.get_candidates(str(selected_election))
             try:
+                candidates = self.app.server.get_candidates(selected_election)
                 if candidates:
                     # Push the VoteScreen with the list of candidates
                     self.app.push_screen(
@@ -119,7 +121,7 @@ class MainScreen(Screen):
 
 
 class VoteScreen(Screen):
-    """Screen for displaying candidates of a selected election."""
+    """Screen for displaying candidates of a selected election and voting."""
 
     BINDINGS = [("escape", "quit", "Quit"), ("b", "back", "Back")]
 
@@ -142,12 +144,24 @@ class VoteScreen(Screen):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id and event.button.id.startswith("candidate_"):
-            selected_candidate = event.button.label
-            # Here you could call another RPC method like `vote(self.election_name, selected_candidate)`
-            # For demonstration, we just update the label
-            label = self.query("#vote_title", Label).first()
-            label.update(f"You selected {selected_candidate}.")
-            # Maybe automatically go back or do something else
+            selected_candidate = str(event.button.label)
+            label = self.query_one("#vote_title", Label)
+            # Cast the vote
+            try:
+                success = self.app.server.vote(
+                    self.election_name, selected_candidate, self.app.voter_id
+                )
+                if success:
+                    label.update(
+                        f"Your vote for {selected_candidate} in {self.election_name} has been recorded. Exiting..."
+                    )
+                    # After showing the message, wait a moment and then exit
+
+                    self.set_timer(2.0, self.app.exit)
+                else:
+                    label.update("Failed to cast vote. Please try again.")
+            except Exception as e:
+                label.update(f"Error casting vote: {e}")
 
 
 class MyApp(App):
@@ -157,10 +171,18 @@ class MyApp(App):
         super().__init__()
         self.server_url = server_url
         self.server: xmlrpc.client.ServerProxy
+        self.voter_id: str = ""
 
     def on_mount(self):
         self.server = xmlrpc.client.ServerProxy(self.server_url)
         self.push_screen(LoginScreen())
+
+    def action_quit(self):
+        self.exit()
+
+    def action_back(self):
+        # Go back to the previous screen
+        self.pop_screen()
 
 
 def main(config_path: str = "config.yaml"):

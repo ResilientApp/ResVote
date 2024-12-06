@@ -49,3 +49,8 @@ class resVoteServer:
                 pass
 
         return candidates
+
+    def vote(self, election_id: str, candidate_name: str, voter_id: str) -> bool:
+        """Cast a vote for a candidate in an election."""
+        # ToDo - create a Vote object and send it to the VoteServer
+        return True
