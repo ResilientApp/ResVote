@@ -26,6 +26,12 @@ def main(config_path: str = "config.yaml"):
         candidates = s.get_candidates(election_id)
         print(candidates)
 
+    election_id = "election0"
+    assert s.create_vote(username, election_id, "Alice")
+    
+    votes = s.get_votes(election_id)
+    print(votes)
+
 
 if __name__ == "__main__":
     fire.Fire(main)

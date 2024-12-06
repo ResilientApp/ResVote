@@ -86,10 +86,43 @@ class resVoteServer:
         candidates = self.elections[election_id].candidates
         return candidates
 
-    def vote(self, election_id: str, candidate_name: str, voter_id: str) -> bool:
-        """Cast a vote for a candidate in an election."""
-        # ToDo - create a Vote object and send it to the ResDBServer
+    def create_vote(self, voter_id: str, election_id: str, candidate_name: str) -> bool:
+        """Cast a vote for a candidate in an election.
+        if the election, candidate, or voter does not exist, return False.
+        If the voter has already voted in this election, return False.
+        """
+        if election_id not in self.elections:
+            print(f"election_id {election_id} not in self.elections")
+            return False
+
+        if candidate_name not in self.elections[election_id].candidates:
+            print(f"candidate_name {candidate_name} not in self.elections")
+            return False
+
+        # NOTE: admin can also vote
+        if voter_id not in self.users and voter_id not in self.admins:
+            print(f"voter_id {voter_id} not in the users")
+            return False
+
+        new_vote = Vote(
+            election_id=election_id,
+            candidate_name=candidate_name,
+            voter_id=voter_id,
+        )
+
+        if new_vote.transaction_id in self.votes:
+            return False
+
+        # add vote to local cache
+        self.votes[new_vote.transaction_id] = new_vote
+        # add vote in ResDB
+        # ! ignoring whether the record is created successfully for now
+        _ = self.resdb.create(new_vote)
         return True
+
+    def get_votes(self, election_id: str) -> list[Vote]:
+        """Get a list of votes for a given election."""
+        return [vote for vote in self.votes.values() if vote.election_id == election_id]
 
     def visualization(self, election_id: str):
         # ToDo - query visualization data from the ResDBServer

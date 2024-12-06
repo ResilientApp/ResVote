@@ -167,7 +167,7 @@ class VoteScreen(Screen):
             label = self.query_one("#vote_title", Label)
             # Cast the vote
             try:
-                success = self.app.server.vote(
+                success = self.app.server.create_vote(
                     self.election_name, selected_candidate, self.app.voter_id
                 )
                 if success:
