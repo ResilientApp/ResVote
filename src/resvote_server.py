@@ -28,14 +28,18 @@ class resVoteServer:
             return
 
         for d in tqdm(all_data):
-            if d is None or "type" not in d:
+            if d is None:
                 continue
-            if d["type"] == "Voter":
-                self.users[d["id"]] = Voter(**d["data"])
-            elif d["type"] == "Election":
-                self.elections[d["id"]] = Election(**d["data"])
-            elif d["type"] == "Vote":
-                self.votes[d["id"]] = Vote(**d["data"])
+
+            try:
+                if d["type"] == "Voter":
+                    self.users[d["id"]] = Voter(**d["data"])
+                elif d["type"] == "Election":
+                    self.elections[d["id"]] = Election(**d["data"])
+                elif d["type"] == "Vote":
+                    self.votes[d["id"]] = Vote(**d["data"])
+            except KeyError:
+                continue
 
     def register(self, username: str, password: str, is_admin: bool) -> bool:
         """Register a new user. If the user already exists, return False."""
@@ -51,12 +55,16 @@ class resVoteServer:
 
         return True
 
-    def login(self, username: str, password: str) -> bool:
+    def login(self, username: str, password: str, is_admin: bool) -> bool:
         """Login a user.
         If the user does not exist or the password is incorrect,
         return False.
         """
         if username not in self.users:
+            return False
+
+        # block non-admin users from logging in as admin
+        if not self.users[username].is_admin and is_admin:
             return False
 
         # NOTE: should send request to ResDB to verify the password for security reasons

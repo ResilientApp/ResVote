@@ -51,7 +51,7 @@ class LoginScreen(Screen):
 
         elif event.button.id == "login_btn":
             try:
-                success = self.app.server.login(username, password)
+                success = self.app.server.login(username, password, self.is_admin)
                 if success:
                     self.app.voter_id = username
                     if self.is_admin:
