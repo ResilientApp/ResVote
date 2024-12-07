@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import ResVaultSDK from 'resvault-sdk';
-import { Button } from "antd";
+import { Button, Modal } from "antd";
 import { VOTE_USER_KEYS } from "../../mongoDB/mongoAPI";
 import "./VoteInElectionView.css"
 
@@ -19,6 +19,7 @@ export default function VoteInElectionView(params) {
     const { election, token, setElectionToVoteIn } = params
     const { description, name, candidates } = election;
     const [selectedCandidate, setSelectedCandidate] = useState("");
+    const [modalMessage, setModalMessage] = useState(null);
 
     const sdkRef = useRef(null);
 
@@ -42,10 +43,10 @@ export default function VoteInElectionView(params) {
             if (message.data.success) {
                 console.log("Vote created successfully");
                 console.log("Response:", JSON.stringify(message));
-                setSelectedCandidate(null);
-                setElectionToVoteIn(null);
+                setModalMessage(`Vote successfully submitted. Click ok to return to elections.`);
             } else {
                 console.error("Vote creation failed:", message.data.error, JSON.stringify(message.data.errors));
+                setModalMessage("Vote failed to complete, hit cancel to try again.")
             }
           }
         };
@@ -84,6 +85,12 @@ export default function VoteInElectionView(params) {
             }
         }
     }
+
+    function cleanUp() {
+        setModalMessage(null);
+        setElectionToVoteIn(null);
+        setSelectedCandidate(null);
+    }
     console.log("Selected Candidate = ", selectedCandidate);
     return (
         <>
@@ -106,6 +113,14 @@ export default function VoteInElectionView(params) {
                 })}
                 <input type="submit" value="Vote!" />
             </form>
+            <Modal
+            open={modalMessage !== null}
+            onOk={cleanUp}
+            onCancel={() => setModalMessage(null)}
+            closable={false}
+            >
+                {modalMessage}
+            </Modal>
         </>
     )
 }

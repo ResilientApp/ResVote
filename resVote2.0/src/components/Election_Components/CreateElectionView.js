@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Button, Input, Form, List } from "antd";
+import { Button, Input, Form, List, Modal } from "antd";
 import ResVaultSDK from 'resvault-sdk';
 import { ELECTION_LIST_KEYS } from "../../mongoDB/mongoAPI";
 import "./CreateElectionView.css";
@@ -15,12 +15,16 @@ export default function CreateElectionView(params) {
     const [candidateInput, setCandidateInput] = useState('');
     const [candidates, setCandidates] = useState([]);
 
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
+    const [isSuccess, setIsSuccess] = useState(false);
+
     const sdkRef = useRef(null);
 
     if (!sdkRef.current) {
         sdkRef.current = new ResVaultSDK();
     }
-    
+
     useEffect(() => {
         const sdk = sdkRef.current;
         if (!sdk) return;
@@ -36,13 +40,16 @@ export default function CreateElectionView(params) {
           ) {
             if (message.data.success) {
                 console.log("Election created successfully");
-                console.log("Response:", JSON.stringify(message));
                 const id = message.data.data.postTransaction.id;
-                console.log(`ID = ${id}`)
+                setModalMessage(`Election created successfully! ID: ${id}`);
+                setIsSuccess(true);
 
             } else {
                 console.error("Election creation failed:", message.data.error, JSON.stringify(message.data.errors));
+                setModalMessage(`Election creation failed: ${message.data.error}`);
+                setIsSuccess(false);
             }
+            setModalVisible(true);
           }
         };
     
@@ -162,6 +169,19 @@ export default function CreateElectionView(params) {
                 
                 <Button type="primary" onClick={handleSubmit}>Create Election</Button>
             </Form>
+
+            <Modal
+                open={modalVisible}
+                onOk={() => setModalVisible(false)}
+                onCancel={() => setModalVisible(false)}
+                title={isSuccess ? "Success" : "Error"}
+                okText="Close"
+                cancelButtonProps={{ style: { display: 'none' } }}
+                centered
+                closable={false}
+            >
+                <p>{modalMessage}</p>
+            </Modal>
         </>
     );
 }
