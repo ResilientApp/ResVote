@@ -16,12 +16,8 @@ from .datatype import Vote, Voter, Election
 
 
 class ResDBServer:
-    def __init__(self, config_path: str, log_path: str | None = None) -> None:
+    def __init__(self, config_path: str) -> None:
         self.db = ResDBORM(config_path)
-        self.record_ids: set[str] = set()
-
-    def __del__(self) -> None:
-        self.delete_all()
 
     def create(self, vote: Vote | Voter | Election) -> Maybe[str]:
         """create a single vote record in the DB,
@@ -111,29 +107,6 @@ class ResDBServer:
             return None
 
         return response
-
-    def delete_all(self):
-        """delete all data records managed by this server"""
-
-        for rid in self.record_ids:
-            response = self.db.delete(rid)
-            if (
-                isinstance(response, dict)
-                and "status" in response
-                and response["status"] != "delete successful"
-            ):
-                logging.warning(response["status"])
-
-    def db_delete_all(self):
-        """delete all data records in the DB"""
-        try:
-            response = self.db.read_all()
-        except Exception as e:
-            logging.warning(e)
-            return
-
-        for record in response:
-            self.db.delete(record["id"])
 
     # def get(self, election_id: str, voter_id: str) -> Maybe[Vote]:
     #     """Retrieve a vote by election_id and voter_id.
