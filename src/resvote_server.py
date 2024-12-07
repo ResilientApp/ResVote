@@ -5,6 +5,8 @@ from .resdb import ResDBServer
 from .datatype import Vote, Voter, Election
 from .generator import generate_votes
 from tqdm import tqdm
+from typing import Optional
+from collections import Counter
 
 
 class resVoteServer:
@@ -158,3 +160,58 @@ class resVoteServer:
                 _ = self.resdb.create(vote)
 
         return True
+
+    def get_user_vote(self, election_id: str, voter_id: str) -> Optional[str]:
+        """Retrieve a vote by election_id and voter_id.
+
+        Args:
+            election_id (str): The election ID.
+            voter_id (str): The voter ID.
+
+        Returns:
+            Optional[str]: The candidate name if the vote exists, None otherwise.
+        """
+        transaction_id = f"{election_id}++{voter_id}"
+        try:
+            return self.votes[transaction_id].candidate_name
+        except KeyError:
+            return None
+
+    def _get_election_votes(self, election_id: str) -> list[Vote]:
+        """Get a list of votes for a given election."""
+        return [vote for vote in self.votes.values() if vote.election_id == election_id]
+
+    def total_votes(self, election_id: str) -> Optional[int]:
+        """Get the total number of votes in an election.
+
+        Args:
+            election_id (str): The election ID.
+
+        Returns:
+            Optional[int]: The total number of votes if the election exists, None otherwise.
+        """
+        if election_id not in self.elections:
+            return None
+
+        return len(self._get_election_votes(election_id))
+
+    def votes_per_candidate(self, election_id: str) -> Optional[dict[str, int]]:
+        """Get the number of votes each candidate received in an election.
+
+        Args:
+            election_id (str): The election ID.
+
+        Returns:
+            dict[str, int]: A dictionary with candidates as keys and their vote counts as values.
+        """
+        if election_id not in self.elections:
+            return None
+
+        votes = self._get_election_votes(election_id)
+        candidate_votes: dict[str, int] = {
+            candidate: 0 for candidate in self.elections[election_id].candidates
+        }
+        for vote in votes:
+            if vote and vote.election_id == election_id:
+                candidate_votes[vote.candidate_name] += 1
+        return candidate_votes
