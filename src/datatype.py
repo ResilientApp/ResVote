@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict
 from datetime import datetime
+from .util import to_vote_id
 
 
 @dataclass
@@ -15,7 +16,7 @@ class Vote:
 
     @property
     def transaction_id(self):
-        return f"{self.election_id}++{self.voter_id}"
+        return to_vote_id(self.election_id, self.voter_id)
 
 
 @dataclass

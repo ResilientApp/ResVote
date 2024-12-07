@@ -4,9 +4,9 @@
 from .resdb import ResDBServer
 from .datatype import Vote, Voter, Election
 from .generator import generate_votes
+from .util import to_vote_id
 from tqdm import tqdm
 from typing import Optional
-from collections import Counter
 
 
 class resVoteServer:
@@ -171,7 +171,7 @@ class resVoteServer:
         Returns:
             Optional[str]: The candidate name if the vote exists, None otherwise.
         """
-        transaction_id = f"{election_id}++{voter_id}"
+        transaction_id = to_vote_id(election_id, voter_id)
         try:
             return self.votes[transaction_id].candidate_name
         except KeyError:
