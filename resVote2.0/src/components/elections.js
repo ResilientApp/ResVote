@@ -24,7 +24,7 @@ export default function ElectionsView(params) {
     const { onLogout, token } = params;
     const [electionToVoteIn, setElectionToVoteIn] = useState(null);
     const [createElection, setCreateElection] = useState(false);
-    const [electionsToViewResultsIn, setElectionToViewResultsIn] = useState(null);
+    const [electionToViewResultsIn, setElectionToViewResultsIn] = useState(null);
 
 
     return (
@@ -37,9 +37,9 @@ export default function ElectionsView(params) {
                 /> // Render CreateElection when state is true
             )
             : 
-            electionsToViewResultsIn !== null ? (
+            electionToViewResultsIn !== null ? (
                 <ElectionResultsView 
-                    electionsToViewResultsIn={electionsToViewResultsIn} 
+                    electionToViewResultsIn={electionToViewResultsIn} 
                     setElectionToViewResultsIn={setElectionToViewResultsIn} 
                 />
             )
