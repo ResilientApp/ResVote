@@ -125,6 +125,18 @@ class MainScreen(Screen):
             label = self.query(Label).first()
 
             try:
+                user_vote = self.app.server.get_user_vote(
+                    selected_election, self.app.voter_id
+                )
+                if user_vote is not None:
+                    label.update(
+                        f"You have already voted for {user_vote} in {selected_election}. Please choose another election."
+                    )
+                    return
+            except Exception as e:
+                label.update(f"Error loading candidates: {e}")
+
+            try:
                 candidates = self.app.server.get_candidates(selected_election)
                 if candidates:
                     # Push the VoteScreen with the list of candidates
@@ -168,7 +180,9 @@ class VoteScreen(Screen):
             # Cast the vote
             try:
                 success = self.app.server.create_vote(
-                    self.election_name, selected_candidate, self.app.voter_id
+                    self.app.voter_id,
+                    self.election_name,
+                    selected_candidate,
                 )
                 if success:
                     label.update(
