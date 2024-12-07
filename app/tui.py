@@ -354,7 +354,7 @@ class AdminScreen(Screen):
                 self.show_result(f"Error: {e}")
 
 
-class MyApp(App):
+class resVote(App):
     """Main application class."""
 
     def __init__(self, server_url: str):
@@ -379,7 +379,7 @@ class MyApp(App):
 def main(config_path: str = "config.yaml"):
     host, port = load_server_config(config_path).unwrap()
     server_url = f"http://{host}:{port}"
-    app = MyApp(server_url=server_url)
+    app = resVote(server_url=server_url)
     app.run()
 
 
