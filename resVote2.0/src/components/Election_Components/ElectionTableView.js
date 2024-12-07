@@ -40,6 +40,8 @@ function SelectElection(params) {
 export default function ElectionTableView(params) {
     const [availableElections, setAvailableElections] = useState([]);
     const {setElectionToVoteIn } = params;
+    const elections = ["17b76b826884c788943b119652c9a9bf272e9d50f5439d73d5720b9c6a942869"];
+    
 
     // Hacky way to get the getElections() function to call without error
     useEffect(() => {
@@ -63,13 +65,17 @@ export default function ElectionTableView(params) {
                     </tr>
                 </thead>
                 <tbody>
-                    {availableElections.map(election => (
+                    {availableElections.map(election => {
+                        return ((!election || !election.name || election.name === "error")  ? 
+                        <></>
+                        :
                         <SelectElection 
                             key={election.name} 
                             election={election} 
                             setElectionToVoteIn={setElectionToVoteIn} 
                         />
-                    ))}
+                        )
+                    })}
                 </tbody>
             </table>
         </>
