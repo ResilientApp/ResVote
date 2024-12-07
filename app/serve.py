@@ -19,6 +19,7 @@ def serve(config_path: str = "config.yaml"):
         server.register_introspection_functions()
         server.register_instance(resVoteServer(config_path))
 
+        print(f"Listening on port {port}...")
         try:
             server.serve_forever()
         except KeyboardInterrupt:
