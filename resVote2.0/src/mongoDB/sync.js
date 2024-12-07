@@ -9,8 +9,8 @@ const mongoConfig = {
 
 
 const resilientDBConfig = {
-    // baseUrl: 'resilientdb://crow.resilientdb.com',
-    baseUrl: "resilientdb://localhost:18000",
+    baseUrl: 'resilientdb://crow.resilientdb.com',
+    // baseUrl: "resilientdb://localhost:18000",
     httpSecure: false,
     wsSecure: false,
   };

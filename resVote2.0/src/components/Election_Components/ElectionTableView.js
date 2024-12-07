@@ -39,22 +39,68 @@ function SelectElection(params) {
 
 export default function ElectionTableView(params) {
     const [availableElections, setAvailableElections] = useState([]);
+    const [isFetching, setIsFetching] = useState(false);
     const {setElectionToVoteIn } = params;
-    const elections = ["17b76b826884c788943b119652c9a9bf272e9d50f5439d73d5720b9c6a942869"];
-    
 
-    // Hacky way to get the getElections() function to call without error
+    // Fetch elections and cache in localStorage
+    const fetchElections = async () => {
+        try {
+            setIsFetching(true);
+            const elections = await getElections();
+            setAvailableElections(elections);
+
+            // Save to localStorage
+            localStorage.setItem("cachedElections", JSON.stringify(elections));
+            localStorage.setItem("cacheTimestamp", Date.now().toString());
+        } catch (error) {
+            console.error("Error fetching elections:", error);
+        } finally {
+            setIsFetching(false);
+        }
+    };
+
+    // Check for cached elections and load them if they are fresh
+    const loadCachedElections = () => {
+        const cachedElections = localStorage.getItem("cachedElections");
+        const cacheTimestamp = localStorage.getItem("cacheTimestamp");
+
+        if (cachedElections && cacheTimestamp) {
+            const now = Date.now();
+            const cacheAge = now - parseInt(cacheTimestamp, 10);
+
+            // Use cached elections if they are less than 5 minutes old
+            if (cacheAge < 5 * 60 * 1000) {
+                setAvailableElections(JSON.parse(cachedElections));
+            } else {
+                fetchElections();
+            }
+        } else {
+            fetchElections();
+        }
+    };
+
+    // Fetch elections every 5 minutes
     useEffect(() => {
-        const fetchElections = async () => {
-            const elections = await getElections();  // Fetch elections asynchronously
-            setAvailableElections(elections);  // Update state with the fetched elections
-        };
+        loadCachedElections();
 
-        fetchElections();
+        const interval = setInterval(() => {
+            fetchElections();
+        }, 5 * 60 * 1000);
+
+        return () => clearInterval(interval);
     }, []);
+
     return (
         <>
-            <h1>Available Elections View</h1>
+            <div className="header">
+                <h1>Available Elections View</h1>
+                <Button
+                    onClick={fetchElections}
+                    disabled={isFetching}
+                >
+                    {isFetching ? "Loading..." : "Fetch Elections"}
+                </Button>
+            </div>
             <table>
                 <thead>
                     <tr>

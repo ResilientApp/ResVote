@@ -1,13 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button, Input, Form, List } from "antd";
-import { elections } from "../../mongoDB/mongoAPI";
-import "./CreateElectionView.css";
 import ResVaultSDK from 'resvault-sdk';
-
-const ELECTION_LIST_KEYS = {
-    pub_key: "65CKYjMoaez6FZnPkD53wxtTAiTX7YEcLvjnQtNjWEas",
-    priv_key: "DeV5ytoprBy7k5M31ABkNNPi8mwaUL8dhGgJnXk1bGN9"
-}
+import { ELECTION_LIST_KEYS } from "../../mongoDB/mongoAPI";
+import "./CreateElectionView.css";
 
 export default function CreateElectionView(params) {
     const { setCreateElection } = params;
@@ -25,7 +20,7 @@ export default function CreateElectionView(params) {
     if (!sdkRef.current) {
         sdkRef.current = new ResVaultSDK();
     }
-
+    
     useEffect(() => {
         const sdk = sdkRef.current;
         if (!sdk) return;
@@ -44,7 +39,6 @@ export default function CreateElectionView(params) {
                 console.log("Response:", JSON.stringify(message));
                 const id = message.data.data.postTransaction.id;
                 console.log(`ID = ${id}`)
-                elections.push(id);
 
             } else {
                 console.error("Election creation failed:", message.data.error, JSON.stringify(message.data.errors));

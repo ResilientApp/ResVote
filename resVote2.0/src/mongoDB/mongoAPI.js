@@ -1,4 +1,14 @@
-import axios from "axios"
+import axios from "axios";
+
+export const ELECTION_LIST_KEYS = {
+    pub_key: "CNYD8bh324Wfpv2YPuXnXCgA5FsuNG2x1NW1ZxZCgzGf",
+    priv_key: "Deq2mn9cRhVHDcMiYSNhhc2KufzzNdor4udq31c5JfYn"
+}
+
+export const VOTE_USER_KEYS = {
+    pub_key: "EhUevpJhHBPuR2JuruiVp2URMCdgKAFCirCBNvhc75iA",
+    priv_key: "FNNeS67CJov9VEW13k4QQH1LfZGmjGQ1qKuxj7uaDPfD"
+}
 
 /**
  * 
@@ -12,59 +22,45 @@ import axios from "axios"
  * 
  * Note: I think I got throttled or something because I can't make any requests to the cloud instance
  */
-
-// Can remove fields as desired (must have at least 1)
-let data = JSON.stringify({
-    query: `query {getTransaction(id: "c3c1f71f13137d8843c4fbf2411d17982f2f2e46004c929c2c7eff35621b1d96") {
-    id
-    version
-    amount
-    metadata
-    operation
-    asset
-    publicKey
-    uri
-    type
-    signerPublicKey
-  }}`,
-    variables: {}
-});
-
-  let config = {
-    method: 'post',
-    maxBodyLength: Infinity,
-    url: 'https://cloud.resilientdb.com/graphql',
-    headers: { 
-      'Content-Type': 'application/json'
-    },
-    data : data
-  };
-export const elections = ["c3c1f71f13137d8843c4fbf2411d17982f2f2e46004c929c2c7eff35621b1d96", "df235b422bae9aeeb89545fb5d75941481b2bfa485c6d7af9049f0efc1b580fb", "44116e50bb139b02b0de8189c3b96040e3a0b8f85363b21c3d75f06d63bb6572"];
-// export const elections = ["c3c1f71f13137d8843c4fbf2411d17982f2f2e46004c929c2c7eff35621b1d96"]
-// export const elections = [];
-
 export async function getElections() {
-    console.log(`elections = ${elections}`);
-    const electionPromises = elections.map(electionID => getElection(electionID));
-
-    const electionObjects = await Promise.all(electionPromises);
-
-    console.log("electionObjects", electionObjects);  // Debug: check the final array of election data
+    const elections = (await fetch("http://127.0.0.1:5000/elections"));
+    const electionJson = await elections.json();
+    console.log("electionJson from express:", electionJson);
+    const electionObjects = electionJson.map((json) => {
+        try {
+            const obj = json.transactions.value.asset.data;
+            return obj;
+        }
+        catch (err) {
+            console.error(`failed to decode ${json} with error ${err}`);
+            return {"name": "error", "reason": err};
+        }
+    })
+    console.log("election objects:", electionObjects);
     return electionObjects;
 }
 
-async function getElection(electionID) {
+async function getElectionFromGraphQL(electionID) {
     console.log(`electionID retrieving = ${electionID}`)
     const data = JSON.stringify({
         query: `query {getTransaction(id: "${electionID}") {
+        id
+        version
+        amount
+        metadata
+        operation
         asset
+        publicKey
+        uri
+        type
+        signerPublicKey
       }}`
     });
 
     const config = {
         method: 'post',
-        url: 'http://127.0.0.1:8000/graphql',
-        // url: 'https://cloud.resilientdb.com/graphql',
+        // url: 'http://127.0.0.1:8000/graphql',
+        url: 'https://cloud.resilientdb.com/graphql',
         headers: {
             'Content-Type': 'application/json',
         },

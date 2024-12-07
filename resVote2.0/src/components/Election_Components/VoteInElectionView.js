@@ -1,12 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import ResVaultSDK from 'resvault-sdk';
 import { Button } from "antd";
+import { VOTE_USER_KEYS } from "../../mongoDB/mongoAPI";
 import "./VoteInElectionView.css"
-
-const VOTE_USER_KEYS = {
-    pub_key: "EhUevpJhHBPuR2JuruiVp2URMCdgKAFCirCBNvhc75iA",
-    priv_key: "FNNeS67CJov9VEW13k4QQH1LfZGmjGQ1qKuxj7uaDPfD"
-}
 
 /**
  * 
@@ -44,10 +40,12 @@ export default function VoteInElectionView(params) {
             message.data.success !== undefined
           ) {
             if (message.data.success) {
-                console.log("Election created successfully");
+                console.log("Vote created successfully");
                 console.log("Response:", JSON.stringify(message));
+                setSelectedCandidate(null);
+                setElectionToVoteIn(null);
             } else {
-                console.error("Election creation failed:", message.data.error, JSON.stringify(message.data.errors));
+                console.error("Vote creation failed:", message.data.error, JSON.stringify(message.data.errors));
             }
           }
         };
@@ -79,8 +77,6 @@ export default function VoteInElectionView(params) {
                     },
                     recipient: VOTE_USER_KEYS["pub_key"],
                 });
-                setSelectedCandidate(null);
-                setElectionToVoteIn(null);
             }
             catch (err) {
                 console.error("Vote wasn't cast", err);
