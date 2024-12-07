@@ -24,8 +24,12 @@ class resVoteServer:
     def _load__from_resdb(self):
         print("loading history data from ResDB")
         all_data = self.resdb.db_read_all()
+        if all_data is None:
+            return
 
         for d in tqdm(all_data):
+            if d is None or "type" not in d:
+                continue
             if d["type"] == "Voter":
                 self.users[d["id"]] = Voter(**d["data"])
             elif d["type"] == "Election":
