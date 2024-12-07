@@ -17,7 +17,7 @@ def serve(config_path: str = "config.yaml"):
         (host, port), requestHandler=SimpleXMLRPCRequestHandler
     ) as server:
         server.register_introspection_functions()
-        server.register_instance(resVoteServer())
+        server.register_instance(resVoteServer(config_path))
 
         try:
             server.serve_forever()

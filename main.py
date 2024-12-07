@@ -1,4 +1,3 @@
-from resdb_orm import ResDBORM
 import fire
 import json
 from dataclasses import asdict
@@ -6,27 +5,28 @@ from hypothesis import given
 from hypothesis.strategies import lists
 
 from src.datatype import Vote
-from src.vote_server import VoteServer
+from src.resdb import ResDBServer
 from src.generator import vote_list_gen
 from src.json_utils import save_votes_to_json
 from src.visualization import (
     plot_candidate_distribution,
     plot_attribute_distribution,
     plot_stacked_bar,
-    plot_time_series
+    plot_time_series,
 )
 
-def generate_votes() -> list[Vote]:
-    return vote_list_gen.example()
-
 
 def generate_votes() -> list[Vote]:
     return vote_list_gen.example()
 
 
-def main(config_path: str = "config.yaml", server_log_path: str | None = None, 
-generated_json='data/generated_votes.json', real_json='data/real_votes.json') -> None:
-    server = VoteServer(config_path, server_log_path)
+def main(
+    config_path: str = "config.yaml",
+    server_log_path: str | None = None,
+    generated_json="data/generated_votes.json",
+    real_json="data/real_votes.json",
+) -> None:
+    server = ResDBServer(config_path, server_log_path)
 
     # Generate and store generated votes
     generated_votes = generate_votes()  # Use the original generate_votes function
@@ -36,10 +36,18 @@ generated_json='data/generated_votes.json', real_json='data/real_votes.json') ->
     # Step 2: Simulate real votes and store them
     ######### TO DO: Replace this with actual frontend votes in production
     real_votes = [
-        Vote(transaction_id="real_001", election_id="PRESIDENTIAL_2024",
-             candidate="Alice", state="California"),
-        Vote(transaction_id="real_002", election_id="PRESIDENTIAL_2024",
-             candidate="Bob", state="Texas")
+        Vote(
+            transaction_id="real_001",
+            election_id="PRESIDENTIAL_2024",
+            candidate="Alice",
+            state="California",
+        ),
+        Vote(
+            transaction_id="real_002",
+            election_id="PRESIDENTIAL_2024",
+            candidate="Bob",
+            state="Texas",
+        ),
     ]
     server.create_all(real_votes, source="real")  # Mark as real
     print(f"Stored {len(real_votes)} real votes.")
@@ -53,7 +61,6 @@ generated_json='data/generated_votes.json', real_json='data/real_votes.json') ->
     read_real_votes = server.read_real()
     save_votes_to_json(read_real_votes, real_json)
     print(f"Saved {len(read_real_votes)} real votes to {real_json}.")
-
 
     ##### TO DO: Implement the function to decide when the generated or the real shows
 

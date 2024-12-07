@@ -4,7 +4,7 @@ Random vote generator based on property-based testing
 
 ## Python
 
-We recommand using `conda` to manage python environment.
+We recommend using `conda` to manage python environment.
 
 ```sh
 conda create -n "resdb" python=3.10.0 ipython
