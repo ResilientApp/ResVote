@@ -4,6 +4,7 @@
 from .resdb import ResDBServer
 from .datatype import Vote, Voter, Election
 from .generator import generate_votes
+from tqdm import tqdm
 
 
 class resVoteServer:
@@ -15,6 +16,20 @@ class resVoteServer:
         self.users: dict[str, Voter] = {}
         self.elections: dict[str, Election] = {}
         self.votes: dict[str, Vote] = {}
+
+        self._load__from_resdb()
+
+    def _load__from_resdb(self):
+        print("loading history data from ResDB")
+        all_data = self.resdb.db_read_all()
+
+        for d in tqdm(all_data):
+            if d["type"] == "Voter":
+                self.users[d["id"]] = Voter(**d["data"])
+            elif d["type"] == "Election":
+                self.elections[d["id"]] = Election(**d["data"])
+            elif d["type"] == "Vote":
+                self.votes[d["id"]] = Vote(**d["data"])
 
     def register(self, username: str, password: str, is_admin: bool) -> bool:
         """Register a new user. If the user already exists, return False."""
