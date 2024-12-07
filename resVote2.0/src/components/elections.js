@@ -4,6 +4,7 @@ import Logout from "./Logout";
 import CreateElectionView from "./Election_Components/CreateElectionView";
 import VoteInElectionView from "./Election_Components/VoteInElectionView";
 import ElectionTableView from "./Election_Components/ElectionTableView";
+import ElectionResultsView from "./Election_Components/ElectionResultsView";
 import "./election.css";
 
 /**
@@ -23,20 +24,34 @@ export default function ElectionsView(params) {
     const { onLogout, token } = params;
     const [electionToVoteIn, setElectionToVoteIn] = useState(null);
     const [createElection, setCreateElection] = useState(false);
+    const [electionsToViewResultsIn, setElectionToViewResultsIn] = useState(null);
 
 
     return (
         <div className="electionContainer">
             {/* Only render CreateElection or the button when createElection is true */}
-            {createElection ? (
-                <CreateElectionView setCreateElection={setCreateElection}/> // Render CreateElection when state is true
-            ) : (
+            {createElection ? 
+            (
+                <CreateElectionView 
+                    setCreateElection={setCreateElection}
+                /> // Render CreateElection when state is true
+            )
+            : 
+            electionsToViewResultsIn !== null ? (
+                <ElectionResultsView 
+                    electionsToViewResultsIn={electionsToViewResultsIn} 
+                    setElectionToViewResultsIn={setElectionToViewResultsIn} 
+                />
+            )
+            :
+            (
                 <>
                     {/* When a user isn't creating an election they can view or vote */}
                     <Button onClick={() => setCreateElection(true)}>Create Election</Button>
                     {electionToVoteIn === null ? (
                         <ElectionTableView
                             setElectionToVoteIn={setElectionToVoteIn}
+                            setElectionToViewResultsIn={setElectionToViewResultsIn}
                         />
                     ) : (
                         <>

@@ -15,7 +15,7 @@ import "./ElectionTableView.css";
  * @returns null
  */
 function SelectElection(params) { 
-    const { election, setElectionToVoteIn } = params;
+    const { election, setElectionToVoteIn, setElectionToViewResultsIn } = params;
     const { description, name, candidates } = election;
     return (
         // Just make a table row with election info and a button that can be used to select 
@@ -32,6 +32,7 @@ function SelectElection(params) {
                     )
                 })}</td>
                 <td><Button onClick={() => setElectionToVoteIn(election)}>Vote</Button></td>
+                <td><Button onClick={() => setElectionToViewResultsIn(election)}>View Results</Button></td>
             </tr>
         </>
     )
@@ -40,7 +41,7 @@ function SelectElection(params) {
 export default function ElectionTableView(params) {
     const [availableElections, setAvailableElections] = useState([]);
     const [isFetching, setIsFetching] = useState(false);
-    const {setElectionToVoteIn } = params;
+    const { setElectionToVoteIn, setElectionToViewResultsIn } = params;
 
     // Fetch elections and cache in localStorage
     const fetchElections = async () => {
@@ -108,6 +109,7 @@ export default function ElectionTableView(params) {
                         <th>Election Description</th>
                         <th>Election Candidates</th>
                         <th>Vote in Election</th>
+                        <th>View Election Results</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -119,6 +121,7 @@ export default function ElectionTableView(params) {
                             key={election.name} 
                             election={election} 
                             setElectionToVoteIn={setElectionToVoteIn} 
+                            setElectionToViewResultsIn={setElectionToViewResultsIn}
                         />
                         )
                     })}

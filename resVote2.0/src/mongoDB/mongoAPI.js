@@ -12,15 +12,15 @@ export const VOTE_USER_KEYS = {
 
 /**
  * 
- * @returns List of availble election Ids
+ * @returns List of availble election objects
+ * electionObj = {
+ *      electionName: str,
+ *      electionDesc: str,
+ *      candidates: List
+ * }
+ * Works by making a request to an express application running on port 5000.
+ * Filters mongoDB cache based off election users public key
  * 
- * Currently have to add in newly created elections by hand (can find transaction ids
- * for them in console logs after creating them)
- * TODO: Filter mongoDB cache on election user public key to get list of votes
- * 
- * returns a list of objects, each having: a name, descripting, and list of candidates
- * 
- * Note: I think I got throttled or something because I can't make any requests to the cloud instance
  */
 export async function getElections() {
     const elections = (await fetch("http://127.0.0.1:5000/elections"));
@@ -38,6 +38,28 @@ export async function getElections() {
     })
     console.log("election objects:", electionObjects);
     return electionObjects;
+}
+
+/**
+ * Similar to above, will return a list of vote objects
+ * Done by making request to express server and filtering mongo cache
+ */
+export async function getVotes() {
+    const votes = (await fetch("http://127.0.0.1:5000/votes"));
+    const voteJson = await votes.json();
+    console.log("electionJson from express:", voteJson);
+    const voteObjects = voteJson.map((json) => {
+        try {
+            const obj = json.transactions.value.asset.data;
+            return obj;
+        }
+        catch (err) {
+            console.error(`failed to decode ${json} with error ${err}`);
+            return {"name": "error", "reason": err};
+        }
+    })
+    console.log("election objects:", voteObjects);
+    return voteObjects;
 }
 
 async function getElectionFromGraphQL(electionID) {
