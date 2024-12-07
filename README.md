@@ -14,6 +14,27 @@ pip install -r requirements.txt
 
 ## Get ResilientDB Dependencies
 
+To save some time, we also provide a docker image that has all the dependencies installed.
+
+```sh
+docker pull yfhecs/rsdb
+docker run -d -p 18000:18000 --name resdb yfhecs/rsdb
+```
+If you choose to use docker, you can skip the following steps.
+Please wait a few minutes for the docker container to start.
+You can check if it is ready by the follow command:
+
+```sh
+❯ curl -X POST -d '{"id":"key1","value":"value1"}' localhost:18000/v1/transactions/commit
+id: key1
+
+❯ curl 127.0.0.1:18000/v1/transactions/key1
+{"id":"key1","value":"value1"}
+```
+
+You can also find the related dockerfile in the `./docker` directory.
+
+
 ### ResilientDB
 
 The following commands will clone and build ResilientDB,
