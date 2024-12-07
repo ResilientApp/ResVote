@@ -63,14 +63,20 @@ export default function ElectionTableView(params) {
                     </tr>
                 </thead>
                 <tbody>
-                    {availableElections.map(election => (
-                        <SelectElection 
-                            key={election.name} 
-                            election={election} 
-                            setElectionToVoteIn={setElectionToVoteIn} 
-                        />
-                    ))}
-                </tbody>
+          {availableElections.map((election) => {
+            if (!election || !election.name) {
+              console.log("Invalid election object:", election);
+              return null;
+            }
+            return (
+              <SelectElection
+                key={election.name}
+                election={election}
+                setElectionToVoteIn={setElectionToVoteIn}
+              />
+            );
+          })}
+        </tbody>
             </table>
         </>
     )
