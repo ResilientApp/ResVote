@@ -6,3 +6,8 @@
 
 # DO NOT RUN sync.js
 * I don't know whether or not this will cause duplicates in mongoDB
+
+### Notes
+* To sync your mongoDB, change the mongoURI in `expressMiddleware/express.js` and `resVote2.0/src/mongoDB/sync.js`
+  - Run sync.js to populate the transactions into your DB
+  - Then run express.js to field requests from `resVote2.0/src/mongoDB/mongoAPI.js`
