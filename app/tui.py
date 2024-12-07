@@ -295,7 +295,7 @@ class AdminScreen(Screen):
             admin_elections.mount(Label(f"Error loading elections: {e}"))
 
     def show_result(self, result: str):
-        """Show the result of visualization or generation."""
+        """Show the result of the selected action."""
         admin_elections = self.query_one("#admin_elections", Vertical)
         # Clear old content
         for child in list(admin_elections.children):
@@ -320,12 +320,33 @@ class AdminScreen(Screen):
             # Call the appropriate RPC based on self.selected_action
             try:
                 if self.selected_action == "visualization":
-                    result = self.app.server.visualization(selected_election)
-                    self.show_result(
-                        f"Visualization result for {selected_election}: {result}"
+                    # visualization_result = self.app.server.total_vo(
+                    #     selected_election
+                    # )
+                    total_votes = self.app.server.total_votes(selected_election)
+                    votes_per_candidate = self.app.server.votes_per_candidate(
+                        selected_election
                     )
+
+                    # Format the results
+                    if total_votes is None:
+                        # Election does not exist
+                        full_result = f"Election '{selected_election}' does not exist."
+                    else:
+                        # full_result = f"Visualization result for {selected_election}: {visualization_result}\n"
+                        full_result = f"Total votes: {total_votes}\n"
+
+                        if votes_per_candidate is not None:
+                            full_result += "Votes per candidate:\n"
+                            for candidate, count in votes_per_candidate.items():
+                                full_result += f" - {candidate}: {count}\n"
+                        else:
+                            full_result += "No candidate vote data available.\n"
+
+                    self.show_result(full_result.strip())
+
                 elif self.selected_action == "generation":
-                    result = self.app.server.generate_random_votes(selected_election)
+                    result = self.app.server.generation_votes(selected_election)
                     self.show_result(
                         f"Generation result for {selected_election}: {result}"
                     )
