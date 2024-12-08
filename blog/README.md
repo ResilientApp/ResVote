@@ -171,6 +171,19 @@ These visualizations not only enhance the transparency of the voting process but
 
 By combining these two powerful features—automated voting simulations and real-time, interactive data visualizations—**Resilient Vote** provides a robust platform for conducting scalable, transparent, and efficient elections.
 
+![age_attribute_distribution](./images/age_attribute_distribution.png)
+![candidate_distribution](./images/candidate_distribution.png)
+![education_grouped_bar_chart](./images/education_grouped_bar_chart.png)
+![gender_grouped_bar_chart](./images/gender_grouped_bar_chart.png)
+![race_grouped_bar_chart](./images/race_grouped_bar_chart.png)
+![region_grouped_bar_chart](./images/region_grouped_bar_chart.png)
+![age_grouped_bar_chart](./images/age_grouped_bar_chart.png)
+![education_attribute_distribution](./images/education_attribute_distribution.png)
+![gender_attribute_distribution](./images/gender_attribute_distribution.png)
+![race_attribute_distribution](./images/race_attribute_distribution.png)
+![region_attribute_distribution](./images/region_attribute_distribution.png)
+![time_series](./images/time_series.png)
+
 ## Future Plans
 
 As we continue to develop **Resilient Vote**, there are several key areas we plan to improve and enhance:
