@@ -1,18 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import About from './pages/About';
-import Layout from './pages/Navbar';
-import Home from './pages/Home';
-import NoPage from './pages/NoPage';
-// import Login from './pages/Login';
-import Login from './provided_components/Login'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
-import TransactionForm from './provided_components/TransactionForm';
-import Loader from './provided_components/Loader';
-import Signup from './pages/Signup';
+import Login from './components/Login';
+import TransactionForm from './components/TransactionForm';
+import Loader from './components/Loader';
+import ElectionsView from './components/elections';
 
-function App() {
+function App() { // This is the heart of our application (or control center)
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [token, setToken] = useState(null);
   const [isLoadingAfterLogin, setIsLoadingAfterLogin] = useState(false);
@@ -44,37 +38,17 @@ function App() {
 
   return (
     <div className="App">
+      {/* Comment below line and uncomment the block to get actual correct code flow */}
+      {/* <ElectionsView onLogout={handleLogout} token="123" />  */}
       {isLoadingAfterLogin && <Loader />}
-      {!isLoadingAfterLogin && isAuthenticated ? (
-        <TransactionForm onLogout={handleLogout} token={token} />
+      {!isLoadingAfterLogin && isAuthenticated ? ( // If the user has logged in and is authenticated we take them to the Elections View
+        <ElectionsView onLogout={handleLogout} token={token}></ElectionsView> // Give a logout handler and an identifier token (pub key?)
+        // <TransactionForm onLogout={handleLogout} token={token} />
       ) : (
-        <Login onLogin={handleLogin} />
+        <Login onLogin={handleLogin} /> // If they haven't actually logged in yet just show the default login screen apartim made
       )}
     </div>
   );
 }
 
 export default App;
-
-// export default function App(){
-//   const [user, setUser] = useState(null);
-//   return(
-//       <BrowserRouter>
-//         <Routes>
-//           <Route path="/" element={<Layout />}>
-
-//             <Route index element={<Home />} />
-
-//             <Route path="about" element={<About />} />
-
-//             <Route path="login" element={<Login />} />
-
-//             <Route path="signup" element={<Signup />} />
-
-//             <Route path="*" element={<NoPage />} />
-
-//           </Route>
-//         </Routes>
-//       </BrowserRouter>
-//   )
-// }
