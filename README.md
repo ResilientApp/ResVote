@@ -83,7 +83,7 @@ python app/serve.py
 source ./env.sh
 python app/tui.py
 ```
-## Frontend
+## resVote React Frontend
 
 ### To run
 1. start the express server with `node expressMiddleware/express.js`
